@@ -1,0 +1,52 @@
+=== Hermit 虾米音乐播放器 ===
+Contributors: mufeng
+Tags: 虾米, html5, flash, 音乐, 播放器
+Requires at least: 3.0
+Tested up to: 3.9.0
+Stable tag: trunk
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
+
+== Description ==
+
+Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
+
+详细介绍： http://mufeng.me/hermit-for-wordpress.html
+
+
+== Installation ==
+
+1. 上传 `hermit`目录 到 `/wp-content/plugins/` 目录
+2. 在后台插件菜单激活该插件
+
+== Changelog ==
+
+= 1.0.42 =
+* 播放Bug修复
+
+= 1.0.41 =
+* 播放Bug修复
+
+= 1.0.4 =
+* 添加自动播放
+* 添加循环播放
+
+= 1.0.3 =
+* 报错方式修改
+
+= 1.0.2 =
+* 添加精选集
+* 增加一个定时器
+* 删除全局变量window.player
+* 更换一个正在播放的图标
+
+= 1.0.1 =
+* 专辑添加最大高度360px;
+* 歌曲信息为null报错的问题;
+* 专辑、单曲地址错误提示，单曲列表去重复;
+* 服务器地址迁移回Bae
+
+= 1.0.0 =
+* 最初1.0.0版本发布
