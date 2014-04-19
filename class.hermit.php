@@ -22,16 +22,31 @@ class hermit{
 	 
 	public function hermit_scripts() {
 		$hermit_options = get_option('hermit_options');
-		if(!$hermit_options["css"]){
-			wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min.css', array(), VERSION, 'screen');
+
+		$page = $hermit_options["page"];
+
+		if( $page == 0 || $page == null ){
+			$page = true;
+		}else if( $page == 1 ){
+			$page = is_single();
+		}else if( $page = 2 ){
+			$page = is_singular();
+		}else{
+			$page = false;
 		}
-		
-		// JS文件在最底部加载
-		wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min.js', array(), VERSION, true);
-		wp_localize_script( 'hermit-js', 'hermit', 
-			array(
-				"url" => $this->base_dir . '/assets/swf/'
-		));		
+
+		if( $page ){
+			if(!$hermit_options["css"]){
+				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min.css', array(), VERSION, 'screen');
+			}
+			
+			// JS文件在最底部加载
+			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min.js', array(), VERSION, true);
+			wp_localize_script( 'hermit-js', 'hermit', 
+				array(
+					"url" => $this->base_dir . '/assets/swf/'
+			));
+		}
 	}
 	
 	/**
@@ -135,7 +150,19 @@ class hermit{
 									<p>默认 CSS文件加载到网页头部。</p>
 								</fieldset>						
 							</td>
-						</tr>					
+						</tr>
+						<tr valign="top">
+							<th scope="row"><label for="blogname">Javascript 和 CSS 加载</label></th>
+							<td>
+								<fieldset>
+									<?php $array = array("0" => "所有页面都加载", "1" => "只在文章页加载", '3' => '文章页+独立页面加载');
+									foreach($array as $key => $value){?>
+										<label><input type="radio" name="hermit_options[page]" value="<?php echo (int) $key;?>" <?php if($options['page']==$key) echo 'checked="checked"'; ?>> <span><?php echo $value;?></span></label><br>
+									<?php };?>
+									<p>默认 所有页面都加载。</p>
+								</fieldset>						
+							</td>
+						</tr>				
 					</tbody>
 				</table>
 				<div class="muhermit_submit_form">

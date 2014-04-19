@@ -18,10 +18,13 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Installation ==
 
-1. 上传 `hermit`目录 到 `/wp-content/plugins/` 目录
+1. 上传 `Hermit`目录 到 `/wp-content/plugins/` 目录
 2. 在后台插件菜单激活该插件
 
 == Changelog ==
+
+= 1.0.43 =
+* 后台添加资源加载选项
 
 = 1.0.42 =
 * 播放Bug修复
