@@ -23,6 +23,9 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Changelog ==
 
+= 1.1.1 =
+* 暴漏一个 window.hermitInit()用来确保Ajax加载页面中音乐的正常播放，具体的例子参考：http://imufeng.github.io/hermit-ajax.html
+
 = 1.1.0 =
 * 添加静音按钮
 
