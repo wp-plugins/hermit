@@ -45,7 +45,7 @@ class hermit{
 			wp_localize_script( 'hermit-js', 'hermit', 
 				array(
 					"url" => $this->base_dir . '/assets/swf/',
-					"version" => VERSION
+					"ajax_url" =>  admin_url() . "admin-ajax.php"
 			));
 		}
 	}
