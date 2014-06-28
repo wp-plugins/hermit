@@ -14,6 +14,8 @@ class hermit{
 		add_action('wp_enqueue_scripts', array($this, 'hermit_scripts'));
 		add_action('media_buttons_context', array($this,'custom_button'));
 		add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
+		add_action( 'wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
+		add_action( 'wp_ajax_hermit', array($this, 'hermit_callback'));	
 	}
 	
 	/**
@@ -37,14 +39,15 @@ class hermit{
 
 		if( $page ){
 			if(!$hermit_options["css"]){
-				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min.css', array(), VERSION, 'screen');
+				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.3.0.css', array(), VERSION, 'screen');
 			}
 			
 			// JS文件在最底部加载
-			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min.js', array(), VERSION, true);
+			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min-1.3.0.js', array(), VERSION, true);
 			wp_localize_script( 'hermit-js', 'hermit', 
 				array(
 					"url" => $this->base_dir . '/assets/swf/',
+					"nonce" => wp_create_nonce("hermit-nonce"),
 					"ajax_url" =>  admin_url() . "admin-ajax.php"
 			));
 		}
@@ -56,9 +59,14 @@ class hermit{
 	public function shortcode($atts, $content=null){
 		extract(shortcode_atts(array(
 			'auto' => 0,
-			'loop' => 0
+			'loop' => 0,
+			'unexpand' => 0
 		), $atts));
-		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="hermit-list"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
+
+		$expandClass = $unexpand ? "hermit-list unexpand" : "hermit-list";
+		$icon_url = $this->base_dir . '/assets/images/cover.png';
+
+		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box hermit-clear"><div class="hermit-covbtn"><img class="hermit-cover" src="'.$icon_url.'" width="36" height="36" /></div><div class="hermit-conpros"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
 	}
 	
 	/**
@@ -68,6 +76,57 @@ class hermit{
 		$icon_url = $this->base_dir . '/assets/images/iconx.png';
 		$context .= "<a id='gohermit' class='button' href='javascript:;' title='添加虾米音乐'><img src='{$icon_url}' width='16' height='16' /></a>";
 		return $context;
+	}
+	
+	/**
+	 * JSON请求虾米数据
+	 */
+	public function hermit_callback() {
+		global $HMTJSON;
+
+		$scope = $_GET['scope'];
+		$id = $_GET['id'];
+		$nonce = $_SERVER['HTTP_NONCE'];
+
+		if ( !wp_verify_nonce($nonce, "hermit-nonce") ) {
+			$result = array(
+				'status' =>  500,
+				'msg' =>  '非法请求'
+			);
+		}else{
+			switch ($scope) {
+				case 'songs' :
+					$result = array(
+						'status' => 200,
+						'msg' => $HMTJSON->song_list($id)
+					);
+					break;
+
+				case 'album':
+					$result = array(
+						'status' =>  200,
+						'msg' => $HMTJSON->album($id)
+					);
+					break;
+
+				case 'collect':
+					$result = array(
+						'status' =>  200,
+						'msg' =>  $HMTJSON->collect($id)
+					);
+					break;						
+				
+				default:
+					$result = array(
+						'status' =>  400,
+						'msg' =>  null
+					);
+			}
+		}
+
+		header('Content-type: application/json');
+		echo json_encode($result);
+		exit;
 	}	
 	
 	/**

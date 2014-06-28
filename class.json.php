@@ -1,5 +1,5 @@
 <?php
-class fetchjson{
+class HermitJson{
 	const API_URL_PREFIX = "http://www.xiami.com/app";
 	const SONG_URL = "/android/song/id/";
 	const ALBUM_URL = "/iphone/album/id/";
@@ -21,17 +21,17 @@ class fetchjson{
 		$response = $this->http($url);
 
 		if(  $response && $response['status'] == "ok" ){
-		              $result = array(
-			              "song_id" => $response["song"]["song_id"],
-			              "song_title" => $response["song"]["song_name"],
+		    $result = array(
+			    "song_id" => $response["song"]["song_id"],
+			    "song_title" => $response["song"]["song_name"],
 				"song_author" => $response["song"]["artist_name"],
 				"song_cover" => $response["song"]["song_logo"],
-				 "song_src" => $response["song"]["song_location"]
+				"song_src" => $response["song"]["song_location"]
 			);
 
-		              $this->set_cache($key, $result);
+		    $this->set_cache($key, $result);
 
-		              return $result;
+		    return $result;
 		}
 
 		return false;
@@ -52,7 +52,7 @@ class fetchjson{
 			return $result;
 		}
 
-	       	 return false;
+	    return false;
 	}
 
 	public function album($album_id){
@@ -86,7 +86,8 @@ class fetchjson{
 					"song_title" => $value["name"],
 					"song_length" => $value["length"],
 					"song_src" => $value["location"],
-					"song_author" => $value["singers"]
+					"song_author" => $value["singers"],
+					"song_cover" => $result["album_logo"]
 				);
 				$album["album_author"] = $value["singers"];
 			}
@@ -129,7 +130,8 @@ class fetchjson{
 					"song_title" => $value["name"],
 					"song_length" => 0,
 					"song_src" => $value["location"],
-					"song_author" => $value["singers"]
+					"song_author" => $value["singers"],
+					"song_cover" => $result["logo"]
 				);
 			}
 			$this->set_cache($key, $collect);
