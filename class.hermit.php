@@ -31,7 +31,7 @@ class hermit{
 			$page = true;
 		}else if( $page == 1 ){
 			$page = is_single();
-		}else if( $page = 2 ){
+		}else if( $page == 2 ){
 			$page = is_singular();
 		}else{
 			$page = false;
@@ -63,7 +63,7 @@ class hermit{
 			'unexpand' => 0
 		), $atts));
 
-		$expandClass = $unexpand ? "hermit-list unexpand" : "hermit-list";
+		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
 		$icon_url = $this->base_dir . '/assets/images/cover.png';
 
 		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box hermit-clear"><div class="hermit-covbtn"><img class="hermit-cover" src="'.$icon_url.'" width="36" height="36" /></div><div class="hermit-conpros"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
@@ -215,7 +215,7 @@ class hermit{
 							<th scope="row"><label for="blogname">Javascript 和 CSS 加载</label></th>
 							<td>
 								<fieldset>
-									<?php $array = array("0" => "所有页面都加载", "1" => "只在文章页加载", '3' => '文章页+独立页面加载');
+									<?php $array = array("0" => "所有页面都加载", "1" => "只在文章页加载", '2' => '文章页+独立页面加载');
 									foreach($array as $key => $value){?>
 										<label><input type="radio" name="hermit_options[page]" value="<?php echo (int) $key;?>" <?php if($options['page']==$key) echo 'checked="checked"'; ?>> <span><?php echo $value;?></span></label><br>
 									<?php };?>
