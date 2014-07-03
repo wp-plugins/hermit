@@ -140,17 +140,48 @@ class HermitJson{
 
 		return false;		
 	}
+	
+	private function rand_ip(){
+
+		$ip2id= round(rand(600000, 2550000) / 10000);
+		$ip3id= round(rand(600000, 2550000) / 10000);
+		$ip4id= round(rand(600000, 2550000) / 10000);
+
+		$arr_1 = array("218","218","66","66","218","218","60","60","202","204","66","66","66","59","61","60","222","221","66","59","60","60","66","218","218","62","63","64","66","66","122","211");
+		$randarr= mt_rand(0,count($arr_1)-1);
+		$ip1id = $arr_1[$randarr];
+		return $ip1id.".".$ip2id.".".$ip3id.".".$ip4id;
+	}	
 
 	private function http($url){
-		$response =  wp_remote_get( $url );
-		if ( !is_wp_error($response) && $response['response']['code'] == 200 ){
-			$response = $response['body'];
-			if ( !empty($response) ){
-				return json_decode($response, true);
-			}
+		if( !$url ){
+			return false;
 		}
+		
+		$ip = $this->rand_ip();
 
-		return false;
+        $header = array(
+            'Host: www.xiami.com',
+            'User-Agent: Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19',
+            'X-FORWARDED-FOR:'.$ip,
+			'CLIENT-IP:'.$ip,
+			'Proxy-Connection:keep-alive',
+			'X-Requested-With:XMLHttpRequest'
+        );
+
+		$ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_REFERER, 'http://www.xiami.com/web/spark');
+        $cexecute = curl_exec($ch);
+		@curl_close($ch);
+
+		if ($cexecute) {
+			$result = json_decode($cexecute, true);
+			return $result;
+		}else{
+			return false;
+		}
 	}
 
 	public function get_cache($key){

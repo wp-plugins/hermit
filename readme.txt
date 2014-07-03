@@ -23,6 +23,9 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Changelog ==
 
+= 1.3.1 =
+* Keep Fighting
+
 = 1.3.0 =
 * 新增封面
 * 播放器JavaScript重构
