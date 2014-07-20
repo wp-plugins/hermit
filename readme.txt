@@ -23,8 +23,10 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Changelog ==
 
+= 1.3.3 =
+* 换个IP地址
+
 = 1.3.2 =
-* Keep Fighting
 * 修复部分bug
 
 = 1.3.0 =

@@ -140,25 +140,13 @@ class HermitJson{
 
 		return false;		
 	}
-	
-	private function rand_ip(){
-
-		$ip2id= round(rand(600000, 2550000) / 10000);
-		$ip3id= round(rand(600000, 2550000) / 10000);
-		$ip4id= round(rand(600000, 2550000) / 10000);
-
-		$arr_1 = array("218","218","66","66","218","218","60","60","202","204","66","66","66","59","61","60","222","221","66","59","60","60","66","218","218","62","63","64","66","66","122","211");
-		$randarr= mt_rand(0,count($arr_1)-1);
-		$ip1id = $arr_1[$randarr];
-		return $ip1id.".".$ip2id.".".$ip3id.".".$ip4id;
-	}	
 
 	private function http($url){
 		if( !$url ){
 			return false;
 		}
 		
-		$ip = $this->rand_ip();
+		$ip = "42.156.140.238";
 
         $header = array(
             'Host: www.xiami.com',
