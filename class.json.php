@@ -68,7 +68,7 @@ class HermitJson{
 			$result = $response["album"];
 			$count = count($result["songs"]);
 
-			if(  $count < 1 ) return false;
+			if( $count < 1 ) return false;
 
 			$album = array(
 				"album_id" => $result["album_id"],

@@ -39,7 +39,7 @@ class hermit{
 
 		if( $page ){
 			if(!$hermit_options["css"]){
-				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.3.0.css', array(), VERSION, 'screen');
+				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.3.4.css', array(), VERSION, 'screen');
 			}
 			
 			// JS文件在最底部加载
@@ -63,10 +63,15 @@ class hermit{
 			'unexpand' => 0
 		), $atts));
 
-		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
-		$icon_url = $this->base_dir . '/assets/images/cover.png';
+		$hermit_options = get_option('hermit_options');
 
-		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box hermit-clear"><div class="hermit-covbtn"><img class="hermit-cover" src="'.$icon_url.'" width="36" height="36" /></div><div class="hermit-conpros"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
+		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
+		$cover = $hermit_options["cover"];
+		
+		$icon_url = $this->base_dir . '/assets/images/cover.png';
+		$cover_class = $cover == 1 ? " hermit-cover-show" : "";
+		
+		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box hermit-clear'.$cover_class.'"><div class="hermit-covbtn"><img class="hermit-cover" src="'.$icon_url.'" width="36" height="36" /></div><div class="hermit-conpros"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
 	}
 	
 	/**
@@ -197,6 +202,17 @@ class hermit{
 										<p><img src="http://ww1.sinaimg.cn/large/6115ac8fgw1edplnr7ao5j20l605ymxd.jpg" width="800" height="225" /></p>
 									</li>									
 								</ul>
+							</td>
+						</tr>
+						<tr valign="top">
+							<th scope="row"><label for="blogname">封面图片</label></th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Membership</span></legend>
+									<label for="cover">
+										<input name="hermit_options[cover]" type="checkbox" id="cover" value="1" <?php if($options['cover']==1) echo 'checked="checked"';?>>显示<歌曲,专辑,精选集>封面</label><br>
+									<p>默认 不显示封面图片。</p>
+								</fieldset>						
 							</td>
 						</tr>
 						<tr valign="top">
