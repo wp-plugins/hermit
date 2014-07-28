@@ -21,12 +21,18 @@ class HermitJson{
 		$response = $this->http($url);
 
 		if(  $response && $response['status'] == "ok" ){
+
+			if( $response["song"]["song_lrc"] ){
+				$song_lrc = $this->get_song_lrc($response["song"]["song_lrc"]);
+			}
+
 		    $result = array(
 			    "song_id" => $response["song"]["song_id"],
 			    "song_title" => $response["song"]["song_name"],
 				"song_author" => $response["song"]["artist_name"],
 				"song_cover" => $response["song"]["song_logo"],
-				"song_src" => $response["song"]["song_location"]
+				"song_src" => $response["song"]["song_location"],
+				"song_lrc" => $song_lrc
 			);
 
 		    $this->set_cache($key, $result);
@@ -81,13 +87,19 @@ class HermitJson{
 
 			foreach($result["songs"] as $key => $value){
 				$song_id = $value["song_id"];
+				
+				if( $value["lyric"] ){
+					$song_lrc = $this->get_song_lrc($value["lyric"]);
+				}
+				
 				$album["songs"][] = array(
 					"song_id" => $song_id,
 					"song_title" => $value["name"],
 					"song_length" => $value["length"],
 					"song_src" => $value["location"],
 					"song_author" => $value["singers"],
-					"song_cover" => $result["album_logo"]
+					"song_cover" => $result["album_logo"],
+					"song_lrc" => $song_lrc
 				);
 				$album["album_author"] = $value["singers"];
 			}
@@ -125,13 +137,19 @@ class HermitJson{
 
 			foreach($result["songs"] as $key => $value){
 				$song_id = $value["song_id"];
+				
+				if( $value["lyric"] ){
+					$song_lrc = $this->get_song_lrc($value["lyric"]);
+				}
+				
 				$collect["songs"][] = array(
 					"song_id" => $song_id,
 					"song_title" => $value["name"],
 					"song_length" => 0,
 					"song_src" => $value["location"],
 					"song_author" => $value["singers"],
-					"song_cover" => $result["logo"]
+					"song_cover" => $result["logo"],
+					"song_lrc" => $song_lrc
 				);
 			}
 			$this->set_cache($key, $collect);
@@ -141,7 +159,7 @@ class HermitJson{
 		return false;		
 	}
 
-	private function http($url){
+	private function http($url, $json=true){
 		if( !$url ){
 			return false;
 		}
@@ -165,11 +183,43 @@ class HermitJson{
 		@curl_close($ch);
 
 		if ($cexecute) {
-			$result = json_decode($cexecute, true);
+			if($json) $result = json_decode($cexecute, true);
 			return $result;
 		}else{
 			return false;
 		}
+	}
+
+	public function get_song_lrc($lrc_url){
+
+		$content = @file_get_contents($lrc_url);
+		$cache = $this->parse_lrc($content);
+
+		return $cache;
+	}
+
+	private function parse_lrc($lrc_content){
+		$now_lrc = array();
+		$lrc_row = explode("\n", $lrc_content);
+
+		foreach ($lrc_row as $key => $value) {
+			$tmp = explode("]", $value);
+
+			foreach ($tmp as $key => $val) {
+				$tmp2 = substr($val, 1, 8);
+				$tmp2 = explode(":", $tmp2);
+
+				$lrc_sec = intval( $tmp2[0]*60 + $tmp2[1]*1 );
+
+				if( is_numeric($lrc_sec) && $lrc_sec > 0){
+					$count = count($tmp);
+
+					$now_lrc[$lrc_sec] = $tmp[$count-1];  
+				}
+			}
+		}
+
+		return $now_lrc;	
 	}
 
 	public function get_cache($key){
@@ -177,9 +227,9 @@ class HermitJson{
 		return $cache === false ? false : json_decode($cache);
 	}
 
-	public function set_cache($key, $value){
+	public function set_cache($key, $value, $hour=6){
 		$value  = json_encode($value);
-		set_transient($key, $value, 60*60*6);
+		set_transient($key, $value, 60*60*$hour);
 	}
 
 	public function clear_cache($key){
