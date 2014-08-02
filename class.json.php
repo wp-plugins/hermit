@@ -213,8 +213,11 @@ class HermitJson{
 
 				if( is_numeric($lrc_sec) && $lrc_sec > 0){
 					$count = count($tmp);
+					$lrc = trim($tmp[$count-1]);
 
-					$now_lrc[$lrc_sec] = $tmp[$count-1];  
+					if( $lrc != "" ){
+						$now_lrc[$lrc_sec] = $lrc;  
+					}
 				}
 			}
 		}
