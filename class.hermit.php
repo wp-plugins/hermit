@@ -39,11 +39,11 @@ class hermit{
 
 		if( $page ){
 			if(!$hermit_options["css"]){
-				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.3.4.css', array(), VERSION, 'screen');
+				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.4.2.css', array(), VERSION, 'screen');
 			}
 			
 			// JS文件在最底部加载
-			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min-1.4.0.js', array(), VERSION, true);
+			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min-1.4.2.js', array(), VERSION, true);
 			wp_localize_script( 'hermit-js', 'hermit', 
 				array(
 					"url" => $this->base_dir . '/assets/swf/',
