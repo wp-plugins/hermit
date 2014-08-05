@@ -33,7 +33,7 @@
 				var d = [],
 					auto = Number( a('#hermit-auto').prop("checked") ),
 					loop = Number( a('#hermit-loop').prop("checked") ),
-					unexpand = Number( a('#hermit-unexpand').prop("checked") )
+					unexpand = Number( a('#hermit-unexpand').prop("checked") );
 
 				a.each(b, function(b, g) {
 					0 > a.inArray(g, d) && d.push(g)
@@ -51,16 +51,20 @@
 			var b = a("#hermit-album").val(),
 				h = /http:\/\/www.xiami.com\/album\/(\d+).*?/,
 				auto = Number( a('#hermit-auto').prop("checked")),
-				loop = Number( a('#hermit-loop').prop("checked"));
+				loop = Number( a('#hermit-loop').prop("checked")),
+				unexpand = Number( a('#hermit-unexpand').prop("checked") );
+
 			h.test(b) ? (b = b.match(h)[1], send_to_editor('[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]album#:' + b + '[/hermit]'), c()) : alert("\u8bf7\u8f93\u5165\u6b63\u786e\u7684\u867e\u7c73\u4e13\u8f91\u5730\u5740");
 			break;
 			
 		case "collect":
 			var b = a("#hermit-collect").val(),
-				h = /http:\/\/www.xiami.com\/song\/showcollect\/id\/(\d+).*?/,
+				h = /http:\/\/www.xiami.com\/(song\/showcollect\/id|collect)\/(\d+).*?/,
 				auto = Number( a('#hermit-auto').prop("checked")),
-				loop = Number( a('#hermit-loop').prop("checked"));
-			h.test(b) ? (b = b.match(h)[1], send_to_editor('[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]collect#:' + b + '[/hermit]'), c()) : alert("请输入正确的虾米精选集地址");
+				loop = Number( a('#hermit-loop').prop("checked")),
+				unexpand = Number( a('#hermit-unexpand').prop("checked") );
+				
+			h.test(b) ? (b = b.match(h)[2], send_to_editor('[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]collect#:' + b + '[/hermit]'), c()) : alert("请输入正确的虾米精选集地址");
 			break;			
 		}
 	})

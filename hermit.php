@@ -3,12 +3,12 @@
 Plugin Name: Hermit
 Plugin URI: http://mufeng.me/hermit-for-wordpress.html
 Description: 虾米音乐播放器 Hermit for wordpress xiami music player
-Version: 1.4.2
+Version: 1.4.3
 Author: Mufeng
 Author URI: http://mufeng.me
 */
 
-define('VERSION', '1.4.2');
+define('VERSION', '1.4.3');
 define('HERMIT_PLUGIN_URL', dirname(__FILE__));
 
 global $HMT, $HMTJSON;
