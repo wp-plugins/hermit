@@ -160,7 +160,9 @@ class HermitJson{
             'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53',
             'Cookie: _xiamitoken='.$this->token.'; visit=1',
             'Proxy-Connection:keep-alive',
-            'X-Requested-With:XMLHttpRequest'
+            'X-Requested-With:XMLHttpRequest',
+        	'X-FORWARDED-FOR:42.156.140.238', 
+			'CLIENT-IP:42.156.140.238'
         );
 
 		$ch = curl_init($url);
@@ -189,7 +191,9 @@ class HermitJson{
 				    'Host: m.xiami.com',
 				    'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53',
 				    'Proxy-Connection:keep-alive',
-				    'X-Requested-With:XMLHttpRequest'
+				    'X-Requested-With:XMLHttpRequest',
+        			'X-FORWARDED-FOR:42.156.140.238', 
+					'CLIENT-IP:42.156.140.238'
 				)
 			));
 
