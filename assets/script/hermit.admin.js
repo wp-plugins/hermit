@@ -1,71 +1,10 @@
-﻿jQuery(document).ready(function(a) {
-	var i = ["songlist", "album", 'collect'],
-		c = function() {
-			a("#gohermit, #wp-content-media-buttons").removeClass("selected");
-			a("#hermit-box").remove()
-		};
-	a("#gohermit").click(function() {
-		0 < a("#hermit-box").length ? (a(this).add("#wp-content-media-buttons").removeClass("selected"), a("#hermit-box").remove()) : (0 < a(".wp-editor-tabs").length && a("#wp-content-media-buttons").addClass("selected"), a(this).addClass("selected"), a(0 < a(".wp-editor-tabs").length ? "#wp-content-media-buttons" : "#wp-content-editor-tools").after('<div id="hermit-box" class="postbox"><div id="hermit-content"><div id="hermit-tab"><ul id="hermit-tabul"><li class="hermit-tabli current">\u5355\u66f2</li><li class="hermit-tabli">\u4e13\u8f91</li><li class="hermit-tabli">精选集</li></ul></div><div id="hermit-body"><ul id="hermit-bodyul"><li class="hermit-bodyli current"><textarea id="hermit-song" placeholder="\u8f93\u5165\u867e\u7c73\u6b4c\u66f2\u5730\u5740\uff0c\u591a\u4e2a\u5730\u5740\u8bf7\u56de\u8f66\u6362\u884c"></textarea></li><li class="hermit-bodyli"><input type="text" id="hermit-album" placeholder="\u8f93\u5165\u867e\u7c73\u4e13\u8f91\u5730\u5740" /></li><li class="hermit-bodyli"><input type="text" id="hermit-collect" placeholder="输入虾米精选集地址" /></li></ul></div></div><div id="hermit-action" class="clear"><a id="hermit-delete" class="submitdelete deletion" href="javascript:;">\u53d6\u6d88</a><label for="hermit-auto"><input type="checkbox" id="hermit-auto">自动播放</label><label for="hermit-loop"><input type="checkbox" id="hermit-loop">循环播放</label><label for="hermit-unexpand"><input type="checkbox" id="hermit-unexpand">折叠播放列表</label><div id="hermit-publish" class="button button-primary">\u6dfb\u52a0\u5230\u6587\u7ae0\u4e2d</div></div></div>'))
-	});
-	a("#wp-content-wrap").on("click", "#hermit-delete", function() {
-		c()
-	});
-	a("#wp-content-wrap").on("click", ".hermit-tabli", function() {
-		if (!a(this).hasClass("current")) {
-			var b = a(".hermit-tabli").index(a(this));
-			a(".hermit-tabli, .hermit-bodyli").removeClass("current");
-			a(".hermit-tabli:eq(" + b + "), .hermit-bodyli:eq(" + b + ")").addClass("current")
-		}
-		return !1
-	});
-	a("#wp-content-wrap").on("click", "#hermit-publish", function() {
-		var b = a(".hermit-tabli").index(a(".hermit-tabli.current"));
-		switch (i[b]) {
-		case "songlist":
-			var b = a("#hermit-song").val(),
-				e = [],
-				f = /http:\/\/www.xiami.com\/song\/(\d+).*?/,
-				b = b.split(/\r?\n/g),
-				b = a.grep(b, function(a) {
-					return f.test(a) ? !0 : !1
-				});
-			if (0 < b.length) {
-				var d = [],
-					auto = Number( a('#hermit-auto').prop("checked") ),
-					loop = Number( a('#hermit-loop').prop("checked") ),
-					unexpand = Number( a('#hermit-unexpand').prop("checked") );
-
-				a.each(b, function(b, g) {
-					0 > a.inArray(g, d) && d.push(g)
-				});
-				a.each(d, function(a, b) {
-					e.push(b.match(f)[1])
-				});
-				b = '[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]songlist#:' + e.join(",") + '[/hermit]';
-				send_to_editor(b);
-				c()
-			} else alert("\u8bf7\u8f93\u5165\u6b63\u786e\u7684\u867e\u7c73\u6b4c\u66f2\u5730\u5740");
-			break;
-			
-		case "album":
-			var b = a("#hermit-album").val(),
-				h = /http:\/\/www.xiami.com\/album\/(\d+).*?/,
-				auto = Number( a('#hermit-auto').prop("checked")),
-				loop = Number( a('#hermit-loop').prop("checked")),
-				unexpand = Number( a('#hermit-unexpand').prop("checked") );
-
-			h.test(b) ? (b = b.match(h)[1], send_to_editor('[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]album#:' + b + '[/hermit]'), c()) : alert("\u8bf7\u8f93\u5165\u6b63\u786e\u7684\u867e\u7c73\u4e13\u8f91\u5730\u5740");
-			break;
-			
-		case "collect":
-			var b = a("#hermit-collect").val(),
-				h = /http:\/\/www.xiami.com\/(song\/showcollect\/id|collect)\/(\d+).*?/,
-				auto = Number( a('#hermit-auto').prop("checked")),
-				loop = Number( a('#hermit-loop').prop("checked")),
-				unexpand = Number( a('#hermit-unexpand').prop("checked") );
-				
-			h.test(b) ? (b = b.match(h)[2], send_to_editor('[hermit auto="'+auto+'" loop="'+loop+'" unexpand="'+unexpand+'"]collect#:' + b + '[/hermit]'), c()) : alert("请输入正确的虾米精选集地址");
-			break;			
-		}
-	})
-});
+/** 
+* @name Hermit
+* @version 1.6
+* @create 2014-02-07
+* @lastmodified 2014-09-25 14:13
+* @description Hermit Plugin
+* @author MuFeng (http://mufeng.me)
+* @url http://mufeng.me/hermit-for-wordpress.html
+**/
+jQuery(document).ready(function(a){var b=["songlist","album","collect"],c=function(){a("#gohermit, #wp-content-media-buttons").removeClass("selected"),a("#hermit-box").remove()};a("#gohermit").click(function(){0<a("#hermit-box").length?(a(this).add("#wp-content-media-buttons").removeClass("selected"),a("#hermit-box").remove()):(0<a(".wp-editor-tabs").length&&a("#wp-content-media-buttons").addClass("selected"),a(this).addClass("selected"),a(0<a(".wp-editor-tabs").length?"#wp-content-media-buttons":"#wp-content-editor-tools").after('<div id="hermit-box" class="postbox"><div id="hermit-content"><div id="hermit-tab"><ul id="hermit-tabul"><li class="hermit-tabli current">单曲</li><li class="hermit-tabli">专辑</li><li class="hermit-tabli">精选集</li></ul></div><div id="hermit-body"><ul id="hermit-bodyul"><li class="hermit-bodyli current"><textarea id="hermit-song" placeholder="输入虾米歌曲地址，多个地址请回车换行"></textarea></li><li class="hermit-bodyli"><input type="text" id="hermit-album" placeholder="输入虾米专辑地址" /></li><li class="hermit-bodyli"><input type="text" id="hermit-collect" placeholder="输入虾米精选集地址" /></li></ul></div></div><div id="hermit-action" class="clear"><a id="hermit-delete" class="submitdelete deletion" href="javascript:;">取消</a><label for="hermit-auto"><input type="checkbox" id="hermit-auto">自动播放</label><label for="hermit-loop"><input type="checkbox" id="hermit-loop">循环播放</label><label for="hermit-unexpand"><input type="checkbox" id="hermit-unexpand">折叠播放列表</label><div id="hermit-publish" class="button button-primary">添加到文章中</div></div></div>'))}),a("#wp-content-wrap").on("click","#hermit-delete",function(){c()}),a("#wp-content-wrap").on("click",".hermit-tabli",function(){if(!a(this).hasClass("current")){var b=a(".hermit-tabli").index(a(this));a(".hermit-tabli, .hermit-bodyli").removeClass("current"),a(".hermit-tabli:eq("+b+"), .hermit-bodyli:eq("+b+")").addClass("current")}return!1}),a("#wp-content-wrap").on("click","#hermit-publish",function(){var d=a(".hermit-tabli").index(a(".hermit-tabli.current"));switch(b[d]){case"songlist":var d=a("#hermit-song").val(),e=[],f=/http:\/\/www.xiami.com\/song\/(\d+).*?/,d=d.split(/\r?\n/g),d=a.grep(d,function(a){return f.test(a)?!0:!1});if(0<d.length){var g=[],h=Number(a("#hermit-auto").prop("checked")),i=Number(a("#hermit-loop").prop("checked")),j=Number(a("#hermit-unexpand").prop("checked"));a.each(d,function(b,c){0>a.inArray(c,g)&&g.push(c)}),a.each(g,function(a,b){e.push(b.match(f)[1])}),d='[hermit auto="'+h+'" loop="'+i+'" unexpand="'+j+'"]songlist#:'+e.join(",")+"[/hermit]",send_to_editor(d),c()}else alert("请输入正确的虾米歌曲地址");break;case"album":var d=a("#hermit-album").val(),k=/http:\/\/www.xiami.com\/album\/(\d+).*?/,h=Number(a("#hermit-auto").prop("checked")),i=Number(a("#hermit-loop").prop("checked")),j=Number(a("#hermit-unexpand").prop("checked"));k.test(d)?(d=d.match(k)[1],send_to_editor('[hermit auto="'+h+'" loop="'+i+'" unexpand="'+j+'"]album#:'+d+"[/hermit]"),c()):alert("请输入正确的虾米专辑地址");break;case"collect":var d=a("#hermit-collect").val(),k=/http:\/\/www.xiami.com\/(song\/showcollect\/id|collect)\/(\d+).*?/,h=Number(a("#hermit-auto").prop("checked")),i=Number(a("#hermit-loop").prop("checked")),j=Number(a("#hermit-unexpand").prop("checked"));k.test(d)?(d=d.match(k)[2],send_to_editor('[hermit auto="'+h+'" loop="'+i+'" unexpand="'+j+'"]collect#:'+d+"[/hermit]"),c()):alert("请输入正确的虾米精选集地址")}})});

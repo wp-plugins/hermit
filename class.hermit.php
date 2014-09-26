@@ -2,8 +2,6 @@
 class hermit{
 	public function __construct(){
 		$this->config = get_option('hermit_settings');
-		$this->base_dir = plugins_url('', __FILE__);
-		$this->admin_dir = admin_url('/options-general.php?page=class.hermit.php');
 		
 		/**
 		** 事件绑定
@@ -15,7 +13,10 @@ class hermit{
 		add_action('media_buttons_context', array($this,'custom_button'));
 		add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
 		add_action( 'wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
-		add_action( 'wp_ajax_hermit', array($this, 'hermit_callback'));	
+		add_action( 'wp_ajax_hermit', array($this, 'hermit_callback'));
+
+		add_action( 'wp_ajax_nopriv_hermit_source', array($this, 'hermit_source_callback'));
+		add_action( 'wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
 	}
 	
 	/**
@@ -23,33 +24,21 @@ class hermit{
 	 */	
 	 
 	public function hermit_scripts() {
-		$hermit_options = get_option('hermit_options');
+		global $post,$posts;
+		foreach ($posts as $post) {
+			if ( has_shortcode( $post->post_content, 'hermit') ){
+				wp_enqueue_style('hermit-css', HERMIT_URL . '/assets/style/hermit.min-'.HERMIT_VERSION.'.css', array(), HERMIT_VERSION, 'screen');
 
-		$page = $hermit_options["page"];
-
-		if( $page == 0 || $page == null ){
-			$page = true;
-		}else if( $page == 1 ){
-			$page = is_single();
-		}else if( $page == 2 ){
-			$page = is_singular();
-		}else{
-			$page = false;
-		}
-
-		if( $page ){
-			if(!$hermit_options["css"]){
-				wp_enqueue_style('hermit-css', $this->base_dir . '/assets/style/hermit.min-1.4.2.css', array(), VERSION, 'screen');
+				// JS文件在最底部加载
+				wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/script/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, true);
+				wp_localize_script( 'hermit-js', 'hermit', 
+					array(
+						"url" => HERMIT_URL . '/assets/swf/',
+						"nonce" => wp_create_nonce("hermit-nonce"),
+						"ajax_url" =>  admin_url() . "admin-ajax.php"
+				));
+				break;
 			}
-			
-			// JS文件在最底部加载
-			wp_enqueue_script( 'hermit-js', $this->base_dir . '/assets/script/hermit.min-1.4.2.js', array(), VERSION, true);
-			wp_localize_script( 'hermit-js', 'hermit', 
-				array(
-					"url" => $this->base_dir . '/assets/swf/',
-					"nonce" => wp_create_nonce("hermit-nonce"),
-					"ajax_url" =>  admin_url() . "admin-ajax.php"
-			));
 		}
 	}
 	
@@ -66,20 +55,15 @@ class hermit{
 		$hermit_options = get_option('hermit_options');
 
 		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
-		$cover = $hermit_options["cover"];
 		
-		$icon_url = $this->base_dir . '/assets/images/cover.png';
-		$cover_class = $cover == 1 ? " hermit-cover-show" : "";
-		
-		return '<!--Hermit for wordpress v'.VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box hermit-clear'.$cover_class.'"><div class="hermit-covbtn"><img class="hermit-cover" src="'.$icon_url.'" width="36" height="36" /></div><div class="hermit-conpros"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.VERSION.' end-->';
+		return '<!--Hermit for wordpress v'.HERMIT_VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail">单击鼠标左键播放或暂停。</div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.HERMIT_VERSION.' end-->';
 	}
 	
 	/**
 	 * 添加写文章按钮
 	 */
 	public function custom_button($context) {
-		$icon_url = $this->base_dir . '/assets/images/iconx.png';
-		$context .= "<a id='gohermit' class='button' href='javascript:;' title='添加虾米音乐'><img src='{$icon_url}' width='16' height='16' /></a>";
+		$context .= "<a id='gohermit' class='button' href='javascript:;' title='添加音乐'><span class=\"wp-media-buttons-icon\"></span> 添加音乐</a>";
 		return $context;
 	}
 	
@@ -119,6 +103,13 @@ class hermit{
 						'status' =>  200,
 						'msg' =>  $HMTJSON->collect($id)
 					);
+					break;
+
+				case 'remote':
+					$result = array(
+						'status' =>  200,
+						'msg' =>  $this->music_remote($id)
+					);
 					break;						
 				
 				default:
@@ -134,15 +125,74 @@ class hermit{
 		exit;
 	}	
 	
+
+	/**
+	 * 
+	 * @return [type] [description]
+	 */
+	function hermit_source_callback(){
+		$type = $_POST['type'];
+
+		$result = array(
+			'msg' => 500
+		);
+
+		switch ($type) {
+			case 'new':
+				$this->music_new();
+				$result['msg'] = 200;
+				break;
+
+			case 'delete':
+				$this->music_delete();
+				$result['msg'] = 200;
+				break;	
+
+			case 'update':
+				$this->music_update();
+				$result['msg'] = 200;
+				break;
+
+			case 'list':
+				$data = $this->music_list();
+				$result['msg'] = 200;
+				$result['data'] = $data;
+				break;	
+		}
+
+		header('Content-type: application/json');
+		echo json_encode($result);
+		exit;
+	}
+
 	/**
 	 * 添加写文章所需要的js和css
 	 */
 	function page_init(){
 		global $pagenow;
+
+		wp_enqueue_style('hermit-icon', HERMIT_URL . '/assets/style/hermit.icon.css', false, HERMIT_VERSION, false);
+
 		if( $pagenow == "post-new.php" || $pagenow == "post.php" ){
-			wp_enqueue_style('hermit-admin-css', $this->base_dir . '/assets/style/hermit.admin.css', false, VERSION, false);
-			wp_enqueue_script('hermit-admin-js', $this->base_dir . '/assets/script/hermit.admin.js', false, VERSION, false);
-		}		
+			wp_enqueue_style('hermit-post', HERMIT_URL . '/assets/style/hermit.post.css', false, HERMIT_VERSION, false);
+			wp_enqueue_script('hermit-post', HERMIT_URL . '/assets/script/hermit.post.js', false, HERMIT_VERSION, false);
+
+			wp_localize_script( 'hermit-post', 'hermit', 
+				array(
+					"ajax_url" =>  admin_url() . "admin-ajax.php"
+			));
+		}
+
+		if( $pagenow == "admin.php" && $_GET['page'] == 'hermit' ){
+			wp_enqueue_style('hermit-page', HERMIT_URL . '/assets/style/hermit.page.css', false, HERMIT_VERSION, false);
+			wp_enqueue_script('handlebars', HERMIT_URL . '/assets/script/handlebars.js', false, HERMIT_VERSION, false);
+			wp_enqueue_script('hermit-page', HERMIT_URL . '/assets/script/hermit.page.js', false, HERMIT_VERSION, false);
+
+			wp_localize_script( 'hermit-page', 'hermit', 
+				array(
+					"ajax_url" =>  admin_url() . "admin-ajax.php"
+			));
+		}
 	}
 	
 	/**
@@ -150,103 +200,104 @@ class hermit{
 	 */
 	 
 	public function menu() {
-		add_options_page('虾米播放器设置', '虾米播放器设置', 'manage_options', basename(__FILE__), array($this, 'settings_page'));
-		add_action( 'admin_init', array($this, 'settings'));
+		add_menu_page('Hermit 播放器', 'Hermit 播放器', 'manage_options', 'hermit');
+		add_submenu_page('hermit', '音乐库', '音乐库', 'manage_options', 'hermit', array($this, 'main'));
+        add_submenu_page('hermit', '说明', '说明', 'manage_options', 'hermit-help', array($this, 'help'));
+	}
+
+	public function main(){
+		@include 'include/main.php';
+	}
+	
+	public function help(){
+		@include 'include/help.php';
 	}
 	
 	/**
-	 * 添加设置按钮
+	 * 添加<音乐库>按钮
 	 */	
-	 
 	public function plugin_action_link($actions, $plugin_file, $plugin_data){
 		if(strpos($plugin_file, 'hermit')!==false && is_plugin_active($plugin_file)){
-			$myactions = array('option'=>'<a href="'.$this->admin_dir.'">设置</a>');
+			$myactions = array('option'=>'<a href="'.HERMIT_ADMIN_URL.'admin.php?page=hermit">音乐库</a>');
 			$actions = array_merge($myactions,$actions);
 		}
 		return $actions;
 	}
-	
-	/**
-	 * 注册插件设置
-	 */	
-	 	
-	public function settings() {
-		register_setting( 'hermit-settings-group', 'hermit_options' );
+
+	private function music_remote($ids){
+		global $wpdb, $hermit_table_name;
+
+		$result = array();
+		$data = $wpdb->get_results("SELECT id,song_name,song_author,song_url FROM {$hermit_table_name} WHERE id in ({$ids})");
+
+		foreach ($data as $key => $value) {
+			$result['songs'][] = array(
+			    "song_id" => $value->id,
+			    "song_title" => $value->song_name,
+				"song_author" => $value->song_author,
+				"song_src" => $value->song_url
+			);
+		}
+		
+		return $result;
 	}
-	
-	/**
-	 * 插件设置页面
-	 */	
-	public function settings_page() {?>
-		<div class="wrap">
-			<div id="icon-options-general" class="icon32"><br></div><h2>虾米播放器设置</h2><br>
-			<form method="post" action="options.php">
-				<?php settings_fields( 'hermit-settings-group' ); ?>
-				<?php $options = get_option('hermit_options'); ?>
-				<table class="form-table">
-					<tbody>
-						<tr valign="top">
-							<th scope="row"><label for="blogname">食用方法</label></th>
-							<td>
-								<ul>
-									<li>
-										<b>单曲：</b><br /><br />
-										<p><img src="http://ww2.sinaimg.cn/large/6115ac8fgw1edplnqie9rj20m80atjsc.jpg" width="800" height="389" /></p>							
-									</li>
-									<li>
-										<b>专辑：</b><br />
-										<p><img src="http://ww4.sinaimg.cn/large/6115ac8fgw1edplnqxl89j20m805g3yu.jpg" width="800" height="196" /></p>
-									</li>
-									<li>
-										<b>精选集：</b><br />
-										<p><img src="http://ww1.sinaimg.cn/large/6115ac8fgw1edplnr7ao5j20l605ymxd.jpg" width="800" height="225" /></p>
-									</li>									
-								</ul>
-							</td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><label for="blogname">封面图片</label></th>
-							<td>
-								<fieldset>
-									<legend class="screen-reader-text"><span>Membership</span></legend>
-									<label for="cover">
-										<input name="hermit_options[cover]" type="checkbox" id="cover" value="1" <?php if($options['cover']==1) echo 'checked="checked"';?>>显示<歌曲,专辑,精选集>封面</label><br>
-									<p>默认 不显示封面图片。</p>
-								</fieldset>						
-							</td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><label for="blogname">CSS 文件</label></th>
-							<td>
-								<fieldset>
-									<?php $array = array("0" => "随着插件载入到顶部", "1" => "自行处理");
-									foreach($array as $key => $value){?>
-										<label><input type="radio" name="hermit_options[css]" value="<?php echo (int) $key;?>" <?php if($options['css']==$key) echo 'checked="checked"'; ?>> <span><?php echo $value;?></span></label><br>
-									<?php };?>
-									<p>默认 CSS文件加载到网页头部。</p>
-								</fieldset>						
-							</td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><label for="blogname">Javascript 和 CSS 加载</label></th>
-							<td>
-								<fieldset>
-									<?php $array = array("0" => "所有页面都加载", "1" => "只在文章页加载", '2' => '文章页+独立页面加载');
-									foreach($array as $key => $value){?>
-										<label><input type="radio" name="hermit_options[page]" value="<?php echo (int) $key;?>" <?php if($options['page']==$key) echo 'checked="checked"'; ?>> <span><?php echo $value;?></span></label><br>
-									<?php };?>
-									<p>默认 所有页面都加载。</p>
-								</fieldset>						
-							</td>
-						</tr>				
-					</tbody>
-				</table>
-				<div class="muhermit_submit_form">
-					<input type="submit" class="button-primary muhermit_submit_form_btn" name="save" value="<?php _e('Save Changes') ?>"/>
-				</div>
-			</form>
-		</div>
-	<?php }	
+
+	private function music_new(){
+		global $wpdb, $hermit_table_name;
+
+		$song_name = $this->post('song_name');
+		$song_author = $this->post('song_author');
+		$song_url = $this->post('song_url');
+		$created = date('Y-m-d H:i:s');
+
+		$wpdb->insert($hermit_table_name, compact('song_name', 'song_author', 'song_url', 'created'), array('%s', '%s', '%s', '%s'));
+	}
+
+	private function music_update(){
+		global $wpdb, $hermit_table_name;
+
+		$id = $this->post('id');
+		$song_name = $this->post('song_name');
+		$song_author = $this->post('song_author');
+		$song_url = $this->post('song_url');
+
+		$wpdb->update( 
+			$hermit_table_name, 
+			compact('song_name', 'song_author', 'song_url'),
+			array( 'id' => $id ), 
+			array( '%s', '%s', '%s'), 
+			array( '%d' ) 
+		);
+	}
+
+	private function music_delete(){
+		global $wpdb, $hermit_table_name;
+
+		$idarr = $this->post('ids');
+		$idarr = explode(',', $idarr);
+
+		foreach ($idarr as $id) {
+			$wpdb->delete( $hermit_table_name, compact('id'), array( '%d' ) );
+		}
+
+	}
+
+	private function music_list(){
+		global $wpdb, $hermit_table_name;
+
+		$result = $wpdb->get_results("SELECT id,song_name,song_author,song_url,created FROM {$hermit_table_name} ORDER BY `id` DESC");
+		return $result;
+	}
+
+	private function post($key){
+		$key = esc_attr(esc_html($_POST[$key]));
+		return $key;
+	}
+
+	private function get($key){
+		$key = esc_attr(esc_html($_GET[$key]));
+		return $key;
+	}
 }
 
 ?>

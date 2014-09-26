@@ -30,7 +30,6 @@ class HermitJson{
 			    "song_id" => $response["data"][0]["id"],
 			    "song_title" => $response["data"][0]["title"],
 				"song_author" => $response["data"][0]["author"],
-				"song_cover" => $response["data"][0]["cover"],
 				"song_src" => $response["data"][0]["src"]
 			);
 
@@ -80,7 +79,6 @@ class HermitJson{
 				"album_title" => "",
 				"album_author" => "",
 				"album_type" => "albums",
-				"album_cover" => "",
 				"album_count" => $count
 			);
 
@@ -91,11 +89,9 @@ class HermitJson{
 					"song_title" => $value["title"],
 					"song_length" => "",
 					"song_src" => $value["src"],
-					"song_author" => $value["author"],
-					"song_cover" => $result["cover"]
+					"song_author" => $value["author"]
 				);
 				$album["album_author"] = $value["author"];
-				$album["album_cover"] = $value["cover"];
 			}
 
 			$this->set_cache($key, $album);
@@ -125,7 +121,6 @@ class HermitJson{
 				"collect_title" => '',
 				"collect_author" => '',
 				"collect_type" => "collects",
-				"collect_cover" => '',
 				"collect_count" => $count
 			);
 
@@ -136,12 +131,10 @@ class HermitJson{
 					"song_title" => $value["title"],
 					"song_length" => 0,
 					"song_src" => $value["src"],
-					"song_author" => $value["author"],
-					"song_cover" => $result["cover"]
+					"song_author" => $value["author"]
 				);
 
 				$collect["collect_author"] = $value["author"];
-				$collect["collect_cover"] = $value["cover"];
 			}
 			$this->set_cache($key, $collect);
 			return $collect;
@@ -205,7 +198,7 @@ class HermitJson{
 
 					set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60*60*100);
 				}
-			}			
+			}
 		}
 	}
 
