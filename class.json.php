@@ -186,6 +186,11 @@ class HermitJson{
 		if( !$song_list ) return false;
 
 		$songs_array = explode(",", $song_list);
+		
+		if( !is_array($songs_array) || count($songs_array) < 1){
+			return false;
+		}
+		
 		$songs_array = array_unique($songs_array);
 
 		if( !empty($songs_array) ){
