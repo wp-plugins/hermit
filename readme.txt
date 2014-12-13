@@ -2,7 +2,7 @@
 Contributors: mufeng
 Tags: 虾米, html5, flash, 音乐, 播放器
 Requires at least: 3.0
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -22,6 +22,9 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 2. 在后台插件菜单激活该插件
 
 == Changelog ==
+
+= 1.7 =
+* 方便Ajax加载,添加全局函数window.hermit_ajax
 
 = 1.6 =
 * 重写插件菜单页面

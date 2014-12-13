@@ -84,6 +84,7 @@ class hermit{
 			);
 		}else{
 			switch ($scope) {
+				//虾米部分
 				case 'songs' :
 					$result = array(
 						'status' => 200,
@@ -105,6 +106,29 @@ class hermit{
 					);
 					break;
 
+				//网易音乐部分
+				case 'netease_songs' :
+					$result = array(
+						'status' => 200,
+						'msg' => $HMTJSON->netease_songs($id)
+					);
+					break;
+
+				case 'netease_album':
+					$result = array(
+						'status' => 200,
+						'msg' => $HMTJSON->netease_album($id)
+					);
+					break;
+
+				case 'netease_playlist':
+					$result = array(
+						'status' => 200,
+						'msg' => $HMTJSON->netease_playlist($id)
+					);
+					break;	
+
+				//本地音乐部分
 				case 'remote':
 					$result = array(
 						'status' =>  200,
