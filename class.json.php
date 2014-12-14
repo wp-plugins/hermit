@@ -186,11 +186,6 @@ class HermitJson{
 		if( !$song_list ) return false;
 
 		$songs_array = explode(",", $song_list);
-		
-		if( !is_array($songs_array) || count($songs_array) < 1){
-			return false;
-		}
-		
 		$songs_array = array_unique($songs_array);
 
 		if( !empty($songs_array) ){
@@ -213,8 +208,6 @@ class HermitJson{
 
 		$url = "http://music.163.com/api/album/" . $album_id;
     	$response = $this->netease_http($url);
-
-    	//var_dump($response);
 
 		if( $response["code"]==200 && $response["album"] ){
 			//处理音乐信息
@@ -256,13 +249,11 @@ class HermitJson{
 	{
 		$key = "/netease/playlist/$playlist_id";
 
-		//$cache = $this->get_cache($key);
-		//if( $cache ) return $cache;
+		$cache = $this->get_cache($key);
+		if( $cache ) return $cache;
 
 		$url = "http://music.163.com/api/playlist/detail?id=" . $playlist_id;
     	$response = $this->netease_http($url);
-
-    	//var_dump($response);
 
 		if( $response["code"]==200 && $response["result"] ){
 			//处理音乐信息
@@ -382,7 +373,6 @@ class HermitJson{
 					$this->token = $cookie->value;
 
 					set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60*60*100);
-					break;
 				}
 			}
 		}
