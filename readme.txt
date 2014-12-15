@@ -23,6 +23,9 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Changelog ==
 
+= 1.7.2 =
+* 本地音乐库Loading提示方式修改
+
 = 1.7.1 =
 * Bug修复
 
