@@ -366,13 +366,15 @@ class HermitJson{
 				)
 			));
 
-			$cookies = $XM_head['cookies'];
+			if( !is_wp_error($XM_head) ){
+				$cookies = $XM_head['cookies'];
 
-			foreach ($cookies as $key => $cookie) {
-				if( $cookie->name == '_xiamitoken' ){
-					$this->token = $cookie->value;
+				foreach ($cookies as $key => $cookie) {
+					if( $cookie->name == '_xiamitoken' ){
+						$this->token = $cookie->value;
 
-					set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60*60*100);
+						set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60*60*100);
+					}
 				}
 			}
 		}
