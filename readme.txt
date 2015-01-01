@@ -1,6 +1,6 @@
 === Hermit 虾米音乐播放器 ===
 Contributors: mufeng
-Tags: 虾米, html5, flash, 音乐, 播放器
+Tags: 虾米, 网易云音乐, html5, flash, 云音乐, 播放器
 Requires at least: 3.0
 Tested up to: 4.1
 Stable tag: trunk
@@ -22,6 +22,10 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 2. 在后台插件菜单激活该插件
 
 == Changelog ==
+
+= 1.8 =
+* 添加网易云音乐
+* 后台添加音乐部分重写
 
 = 1.7.3 =
 * 尝试修复安装报错问题

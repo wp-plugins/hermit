@@ -173,7 +173,7 @@ class HermitJson{
 				"song_src" => $mp3_url
 			);
 
-		    $this->set_cache($key, $result);
+		    $this->set_cache($key, $result, 12);
 
 		    return $result;
 		}
@@ -238,7 +238,7 @@ class HermitJson{
 				);
 			}
 
-			$this->set_cache($key, $album);
+			$this->set_cache($key, $album, 12);
 			return $album;
 		}
 
@@ -291,7 +291,7 @@ class HermitJson{
 				);
 			}
 
-			$this->set_cache($key, $collect);
+			$this->set_cache($key, $collect, 12);
 			return $collect;
 		}
 
@@ -301,7 +301,7 @@ class HermitJson{
 	private function netease_http($url)
 	{
 	    $refer = "http://music.163.com/";
-	    $header[] = "Cookie: " . "appver=1.5.0.75771;";
+	    $header[] = "Cookie: " . "appver=2.0.2;";
 	    $ch = curl_init();
 	    curl_setopt($ch, CURLOPT_URL, $url);
 	    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
@@ -385,7 +385,7 @@ class HermitJson{
 		return $cache === false ? false : json_decode($cache, true);
 	}
 
-	public function set_cache($key, $value, $hour=6){
+	public function set_cache($key, $value, $hour=1){
 		$value  = json_encode($value);
 		set_transient($key, $value, 60*60*$hour);
 	}
