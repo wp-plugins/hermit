@@ -2,7 +2,12 @@
 class hermit{
 	public function __construct(){
 		$this->config = get_option('hermit_settings');
-		
+
+		/**
+		 * 插件初始化
+		 */
+		$this->initialise();
+
 		/**
 		** 事件绑定
 		**/
@@ -20,27 +25,58 @@ class hermit{
 		add_action( 'wp_ajax_nopriv_hermit_source', array($this, 'hermit_source_callback'));
 		add_action( 'wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
 	}
+
+	/**
+	 * 插件初始化
+	 */
+	private function initialise(){
+		$setting = get_option('hermit_setting');
+
+		if( !$setting || empty($setting) ){
+			update_option('hermit_setting', array(
+												"tips" => "单击鼠标左键播放或暂停。",
+												"strategy" => 1
+											));
+		}
+	}
 	
 	/**
 	 * 载入所需要的CSS和js文件
 	 */	
 	public function hermit_scripts() {
-		global $post,$posts;
-		foreach ($posts as $post) {
-			if ( has_shortcode( $post->post_content, 'hermit') ){
-				wp_enqueue_style('hermit-css', HERMIT_URL . '/assets/style/hermit.min-'.HERMIT_VERSION.'.css', array(), HERMIT_VERSION, 'screen');
+		$setting = get_option('hermit_setting');
+		$strategy = $setting['strategy'];
 
-				// JS文件在最底部加载
-				wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/script/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, true);
-				wp_localize_script( 'hermit-js', 'hermit', 
-					array(
-						"url" => HERMIT_URL . '/assets/swf/',
-						"nonce" => wp_create_nonce("hermit-nonce"),
-						"ajax_url" =>  admin_url() . "admin-ajax.php"
-				));
-				break;
+		if( $strategy == 1 ){
+			global $post,$posts;
+			foreach ($posts as $post) {
+				if ( has_shortcode( $post->post_content, 'hermit') ){
+					$this->_load_scripts();
+					break;
+				}
 			}
+		}else{
+			$this->_load_scripts();
 		}
+	}
+
+	/**
+	 * 加载资源
+	 */
+	private function _load_scripts(){
+		$setting = get_option('hermit_setting');
+		$tips = $setting['tips'];
+
+		wp_enqueue_style('hermit-css', HERMIT_URL . '/assets/style/hermit.min-'.HERMIT_VERSION.'.css', array(), HERMIT_VERSION, 'screen');
+
+		// JS文件在最底部加载
+		wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/script/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, true);
+		wp_localize_script( 'hermit-js', 'hermit', array(
+														"url" => HERMIT_URL . '/assets/swf/',
+														"nonce" => wp_create_nonce("hermit-nonce"),
+														"ajax_url" =>  admin_url() . "admin-ajax.php",
+														"text_tips" => $tips
+													));
 	}
 	
 	/**
@@ -53,10 +89,7 @@ class hermit{
 			'unexpand' => 0
 		), $atts));
 
-		$hermit_options = get_option('hermit_options');
-
 		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
-		
 		return '<!--Hermit for wordpress v'.HERMIT_VERSION.' start--><div class="hermit" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.HERMIT_VERSION.' end-->';
 	}
 	
@@ -223,25 +256,48 @@ class hermit{
 	/**
 	 * 显示后台菜单
 	 */
-	 
 	public function menu() {
 		add_menu_page('Hermit 播放器', 'Hermit 播放器', 'manage_options', 'hermit');
 		add_submenu_page('hermit', '音乐库', '音乐库', 'manage_options', 'hermit', array($this, 'main'));
+		add_submenu_page('hermit', '设置', '设置', 'manage_options', 'hermit-setting', array($this, 'setting'));
         add_submenu_page('hermit', '说明', '说明', 'manage_options', 'hermit-help', array($this, 'help'));
+
+		add_action( 'admin_init', array($this, 'hermit_setting') );
 	}
 
 	/**
 	* 音乐库
 	*/
 	public function main(){
-		@include 'include/main.php';
+		@require_once('include/main.php');
 	}
+
+	/**
+	 * 音乐库 library
+	 */
+	public function library(){
+		@require_once('include/library.php');
+	}
+
+	/**
+	* 设置
+	*/
+	public function setting(){
+		@require_once('include/setting.php');
+	}
+
+	/**
+	* 注册设置数组
+	*/
+	public function hermit_setting(){
+		register_setting('hermit_setting_group', 'hermit_setting');
+	}	
 	
 	/**
 	* 帮助
 	*/
 	public function help(){
-		@include 'include/help.php';
+		@require_once('include/help.php');
 	}
 	
 	/**
@@ -261,74 +317,7 @@ class hermit{
 	public function music_footer(){
 		global $pagenow;
 	    if( $pagenow == "post-new.php" || $pagenow == "post.php" ){
-			?>
-		        <script id="hermit-template" type="text/x-handlebars-template">
-					<div id="hermit-shell">
-		        		<div id="hermit-shell-content" class="media-modal">
-			        		<div class="media-modal-content">
-			        			<a id="hermit-shell-close" class="media-modal-close" href="javascript:;"><span class="media-modal-icon"><span class="screen-reader-text">关闭媒体面板</span></span></a>
-			        			<div id="hermit-shell-body">
-			        				<div class="media-frame-title">
-			        					<h1>插入音乐<span class="dashicons dashicons-arrow-down"></span></h1>
-			        				</div>
-			        				<div class="media-frame-router clearfix">
-			        					<div class="media-router">
-			        						<a href="javascript:;" class="media-menu-item active">虾米音乐</a>
-			        						<a href="javascript:;" class="media-menu-item">网易音乐</a>
-			        						<a href="javascript:;" class="media-menu-item">本地音乐</a>
-			        					</div>
-			        					<a class="hermit-help" href="<?php echo admin_url("admin.php?page=hermit-help");?>" target="_blank">帮助?</a>
-			        				</div>
-			        				<div class="media-frame-content">
-			        					<ul class="hermit-ul">
-			        						<li class="hermit-li active" data-type="xiami">
-			        							<div>
-			        								<label><input type="radio" name="type" value="songlist" checked="checked">单曲</label>
-			        								<label><input type="radio" name="type" value="album">专辑</label>
-			        								<label><input type="radio" name="type" value="collect">精选集</label>
-			        							</div>
-				        						<textarea class="hermit-textarea large-text code" cols="30" rows="9"></textarea>
-			        						</li>
-			        						<li class="hermit-li" data-type="netease">
-			        							<div>
-			        								<label><input type="radio" name="netease_type" value="netease_songs" checked="checked">单曲</label>
-			        								<label><input type="radio" name="netease_type" value="netease_album">专辑</label>
-			        								<label><input type="radio" name="netease_type" value="netease_playlist">歌单</label>
-			        							</div>
-				        						<textarea class="hermit-textarea large-text code" cols="30" rows="9"></textarea>
-			        						</li>
-			        						<li class="hermit-li" data-type="remote">
-			        							<div id="hermit-remote-content"><ul></ul><a id="hermit-remote-sure" class="button" href="javascript:;">确认选择</a></div>
-			        						</li>
-			        					</ul>
-			        					<div>
-			        						<label for="hermit-auto"><input type="checkbox" id="hermit-auto">自动播放</label>
-			        						<label for="hermit-loop"><input type="checkbox" id="hermit-loop">循环播放</label>
-			        						<label for="hermit-unexpand"><input type="checkbox" id="hermit-unexpand">折叠播放列表</label>
-			        					</div>
-			        					<div id="hermit-preview">
-			        					</div>
-			        				</div>
-			        				<div class="media-frame-toolbar">
-			        					<div class="media-toolbar">
-			        						<div class="media-toolbar-primary search-form">
-			        							<a id="hermit-shell-insert" href="javascript:;" class="button media-button button-primary button-large media-button-insert" disabled="disabled">插入至文章</a>
-			        						</div>
-			        					</div>
-			        				</div>
-			        			</div>
-		        			</div>
-		        		</div>
-		        		<div id="hermit-shell-backdrop" class="media-modal-backdrop">
-		        		</div>
-		        	</div>
-		        </script>
-		        <script id="hermit-remote-template" type="text/x-handlebars-template">
-				    {{#data}}
-				    	<li data-id="{{id}}">{{song_name}} - {{song_author}}</li>
-		            {{/data}}
-		        </script>
-			<?php 
+			@require_once('include/template.php');
 		}
 	}
 
@@ -353,9 +342,9 @@ class hermit{
 	private function music_new(){
 		global $wpdb, $hermit_table_name;
 
-		$song_name = $this->post('song_name');
-		$song_author = $this->post('song_author');
-		$song_url = $this->post('song_url');
+		$song_name = stripslashes($this->post('song_name'));
+		$song_author = stripslashes($this->post('song_author'));
+		$song_url = esc_attr(esc_html($this->post('song_url')));
 		$created = date('Y-m-d H:i:s');
 
 		$wpdb->insert($hermit_table_name, compact('song_name', 'song_author', 'song_url', 'created'), array('%s', '%s', '%s', '%s'));
@@ -398,7 +387,7 @@ class hermit{
 	}
 
 	private function post($key){
-		$key = esc_attr(esc_html($_POST[$key]));
+		$key = $_POST[$key];
 		return $key;
 	}
 
@@ -407,5 +396,3 @@ class hermit{
 		return $key;
 	}
 }
-
-?>

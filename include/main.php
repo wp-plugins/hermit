@@ -1,9 +1,18 @@
 <div class="wrap">
 	<h2>资源管理</h2>
 	<div class="hermit-controls">
-		<a id="hermit-music-new" class="action success" href="javascript:;">新增歌曲</a>
-		<a id="hermit-music-delete" class="action" href="javascript:;">删除</a>
-		<span class="hermit-music-delete-tips"></span>
+		<div class="btn-group">
+			<a id="hermit-music-new" class="action success" href="javascript:;">新增歌曲</a>
+		</div>
+		<div class="btn-group">
+			<a id="set-group" class="btn dropdown-toggle" href="javascript:;">操作<span class="caret"></span></a>
+			<ul class="dropdown-menu domain-group disabled">
+				<li class="item"><a id="hermit-music-delete" href="javascript:;">删除</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<span class="hermit-music-delete-tips"></span>
+		</div>
 	</div>
 	<div class="hermit-music">
 		<div class="hermit-music-header">

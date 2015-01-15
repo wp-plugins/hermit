@@ -1,17 +1,17 @@
-=== Hermit 虾米音乐播放器 ===
+=== Hermit 音乐播放器 ===
 Contributors: mufeng
-Tags: 虾米, 网易云音乐, html5, flash, 云音乐, 播放器
+Tags: 虾米, 网易, html5, flash, 音乐, 播放器
 Requires at least: 3.0
 Tested up to: 4.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
+Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 
 == Description ==
 
-Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
+Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 
 详细介绍： http://mufeng.me/hermit-for-wordpress.html
 
@@ -23,9 +23,12 @@ Hermit 虾米音乐播放器：支持Html5+Flash的虾米音乐播放器。
 
 == Changelog ==
 
+= 1.8.1 =
+* 添加设置页面
+* 修复音乐库添加歌曲引号被转义的问题
+
 = 1.8 =
 * 添加网易云音乐
-* 后台添加音乐部分重写
 
 = 1.7.3 =
 * 尝试修复安装报错问题

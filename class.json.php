@@ -173,7 +173,7 @@ class HermitJson{
 				"song_src" => $mp3_url
 			);
 
-		    $this->set_cache($key, $result, 12);
+		    $this->set_cache($key, $result, 24);
 
 		    return $result;
 		}
@@ -238,7 +238,7 @@ class HermitJson{
 				);
 			}
 
-			$this->set_cache($key, $album, 12);
+			$this->set_cache($key, $album, 24);
 			return $album;
 		}
 
@@ -291,7 +291,7 @@ class HermitJson{
 				);
 			}
 
-			$this->set_cache($key, $collect, 12);
+			$this->set_cache($key, $collect, 24);
 			return $collect;
 		}
 
