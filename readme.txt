@@ -23,6 +23,9 @@ Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 
 == Changelog ==
 
+= 1.8.2 =
+* 添加<window.hermitjs.reload>方法
+
 = 1.8.1 =
 * 添加设置页面
 * 修复音乐库添加歌曲引号被转义的问题

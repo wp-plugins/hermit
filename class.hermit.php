@@ -70,7 +70,7 @@ class hermit{
 		wp_enqueue_style('hermit-css', HERMIT_URL . '/assets/style/hermit.min-'.HERMIT_VERSION.'.css', array(), HERMIT_VERSION, 'screen');
 
 		// JS文件在最底部加载
-		wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/script/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, true);
+		wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/script/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, false);
 		wp_localize_script( 'hermit-js', 'hermit', array(
 														"url" => HERMIT_URL . '/assets/swf/',
 														"nonce" => wp_create_nonce("hermit-nonce"),
