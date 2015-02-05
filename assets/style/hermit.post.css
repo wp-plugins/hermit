@@ -1,8 +1,8 @@
 /** 
 * @name Hermit
-* @version 1.8.2
+* @version 1.8.3
 * @create 2014-02-07
-* @lastmodified 2015-02-04 21:24
+* @lastmodified 2015-02-05 19:50
 * @description Hermit Plugin
 * @author MuFeng (http://mufeng.me)
 * @url http://mufeng.me/hermit-for-wordpress.html
