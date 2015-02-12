@@ -1,0 +1,165 @@
+<div class="ht-library">
+    <div class="ht-library-fixed">
+        <div class="ht-actions">
+            <div class="btn-group">
+                <a class="action secondary" href="javascript:;" ng-click="add.show()">+ 新增歌曲</a>
+            </div>
+            <div class="btn-group dropdown">
+                <a class="btn dropdown-toggle" href="javascript:;">
+                    <span class="ht-library-title">批量操作</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="javascript:;" ng-click="delMusicClick()">删除</a>
+                    </li>
+                    <li class="has-submenu">
+                        <a href="javascript:;">移动至分类</a>
+                        <ul class="submenu dropdown-menu">
+                            <li ng-repeat="menu in HTAppShare._menu">
+                                <a ng-bind="menu.title" href="javascript:;" ng-click="moveToCat(menu)"></a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="ht-library-pagenavi">
+                <div class="action">
+                    <a ng-if="catid" href="#/cat/{{catid}}/page/{{paged>1 ? paged-1: 1}}">‹</a>
+                    <a ng-if="!catid" href="#/page/{{paged>1 ? paged-1: 1}}" title="上一页"><span class="icon-arrow-back"></span></a>
+                    <span>{{paged}}/{{max_page}}</span>
+                    <a ng-if="catid" href="#/cat/{{catid}}/page/{{paged<max_page ? paged+1: max_page}}">›</a>
+                    <a ng-if="!catid" href="#/page/{{paged<max_page ? paged+1: max_page}}" title="下一页"><span class="icon-arrow-forward"></span></a>
+                </div>
+            </div>
+        </div>
+        <table class="ht-library-table">
+            <thead>
+            <tr>
+                <th width="50"><input type="checkbox" ng-model="checkBoxValue" ng-change="checkBoxChange()" /></th>
+                <th width="240">歌曲</th>
+                <th width="180">歌手/专辑</th>
+                <th width="180">分类</th>
+                <th>地址</th>
+                <th width="120">操作</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <table class="ht-library-table">
+        <colgroup>
+            <col width="50"/>
+            <col width="240"/>
+            <col width="180"/>
+            <col width="180"/>
+            <col width=""/>
+            <col width="120"/>
+        </colgroup>
+        <tbody>
+            <tr ng-repeat="music in musics" ng-class="{selected: music.selected}">
+                <td><input type="checkbox" name="music" ng-value="music.id" ng-model="music.selected"></td>
+                <td>{{music.song_name}}</td>
+                <td>{{music.song_author}}</td>
+                <td><a href="#/cat/{{music.song_cat}}">{{music.song_cat_name}}</a></td>
+                <td>{{music.song_url}}</td>
+                <td><a href="javascript:;" ng-click="edit.show($index)">编辑</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="btn-group ht-alert ht-alert-{{Alert.status}}" ng-show="Alert.status">
+        <span class="btn-group-message" ng-bind="Alert.message"></span>
+    </div>
+
+    <div class="ht-layer" ng-show="add.display">
+        <div class="ht-layer-content">
+            <div class="ht-layer-header">
+                <span class="ht-layer-title">新建音乐</span>
+                <span class="ht-layer-close ht-layer-close-icon dashicons-before" ng-click="add.hide()"></span>
+            </div>
+            <div class="ht-layer-body">
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">歌曲：</label>
+                    </div>
+                    <input id="ht-layer-song-name" class="ht-layer-input" type="text" ng-model="add.data.song_name" required/>
+                    <div ng-show="add.error.song_name" class="ht-layer-error">歌曲名称不能为空</div>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">歌手/专辑：</label>
+                    </div>
+                    <input id="ht-layer-song-author" class="ht-layer-input" type="text" ng-model="add.data.song_author" required/>
+                    <div ng-show="add.error.song_author" class="ht-layer-error">歌手不能为空</div>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">分类：</label>
+                    </div>
+                    <select ng-model="add.data.song_cat" ng-options="menu.id as menu.title for menu in HTAppShare._menu"></select>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">地址：</label>
+                    </div>
+                    <input id="ht-layer-song-url" class="ht-layer-input" type="text" ng-model="add.data.song_url" required/>
+                    <div ng-show="add.error.song_url" class="ht-layer-error">地址不能为空</div>
+                </div>
+            </div>
+            <div class="ht-layer-footer">
+                <div class="btn-group">
+                    <div class="btn" ng-click="add.post()">新建</div>
+                </div>
+                <div class="btn-group">
+                    <div class="btn ht-layer-close" ng-click="add.hide()">取消</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ht-layer" ng-show="edit.display">
+        <div class="ht-layer-content">
+            <div class="ht-layer-header">
+                <span class="ht-layer-title">编辑音乐</span>
+                <span class="ht-layer-close ht-layer-close-icon dashicons-before" ng-click="edit.hide()"></span>
+            </div>
+            <div class="ht-layer-body">
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">歌曲：</label>
+                    </div>
+                    <input id="ht-layer-song-name" class="ht-layer-input" type="text" ng-model="edit.data.song_name" required/>
+                    <div ng-show="edit.error.song_name" class="ht-layer-error">歌曲名称不能为空</div>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">歌手/专辑：</label>
+                    </div>
+                    <input id="ht-layer-song-author" class="ht-layer-input" type="text" ng-model="edit.data.song_author" required/>
+                    <div ng-show="edit.error.song_author" class="ht-layer-error">歌手不能为空</div>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">分类：</label>
+                    </div>
+                    <select ng-model="edit.data.song_cat" ng-options="menu.id as menu.title for menu in HTAppShare._menu"></select>
+                </div>
+                <div class="ht-layer-item">
+                    <div class="ht-layer-label">
+                        <label for="ht-layer-song-name">地址：</label>
+                    </div>
+                    <input id="ht-layer-song-url" class="ht-layer-input" type="text" ng-model="edit.data.song_url" required/>
+                    <div ng-show="edit.error.song_url" class="ht-layer-error">地址不能为空</div>
+                </div>
+            </div>
+            <div class="ht-layer-footer">
+                <div class="btn-group">
+                    <div class="btn" ng-click="edit.post()">保存</div>
+                </div>
+                <div class="btn-group">
+                    <div class="btn ht-layer-close" ng-click="edit.hide()">取消</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

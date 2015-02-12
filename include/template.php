@@ -23,7 +23,7 @@
                                     <label><input type="radio" name="type" value="album">专辑</label>
                                     <label><input type="radio" name="type" value="collect">精选集</label>
                                 </div>
-                                <textarea class="hermit-textarea large-text code" cols="30" rows="9"></textarea>
+                                <textarea class="hermit-textarea large-text code" cols="30" rows="9" placeholder="输入虾米音乐地址。。。"></textarea>
                             </li>
                             <li class="hermit-li" data-type="netease">
                                 <div>
@@ -31,7 +31,7 @@
                                     <label><input type="radio" name="netease_type" value="netease_album">专辑</label>
                                     <label><input type="radio" name="netease_type" value="netease_playlist">歌单</label>
                                 </div>
-                                <textarea class="hermit-textarea large-text code" cols="30" rows="9"></textarea>
+                                <textarea class="hermit-textarea large-text code" cols="30" rows="9" placeholder="输入网易云音乐音乐地址。。。"></textarea>
                             </li>
                             <li class="hermit-li" data-type="remote">
                                 <div id="hermit-remote-content"><ul></ul><a id="hermit-remote-sure" class="button" href="javascript:;">确认选择</a></div>

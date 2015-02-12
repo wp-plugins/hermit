@@ -7,11 +7,11 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
+Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 == Description ==
 
-Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
+Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 详细介绍： http://mufeng.me/hermit-for-wordpress.html
 
@@ -23,11 +23,18 @@ Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 
 == Changelog ==
 
+= 1.9 =
+* 添加多颜色选择;
+* 添加JS 位置选择;
+* CSS 小幅度调整;
+* 重写音乐库;
+* 修复拖动进度条bug;
+
 = 1.8.3 =
-* 修复<window.hermitjs.reload>方法兼容问题
+* 修复 `window.hermitjs.reload` 方法兼容问题
 
 = 1.8.2 =
-* 添加<window.hermitjs.reload>方法
+* 添加 `window.hermitjs.reload` 方法
 
 = 1.8.1 =
 * 添加设置页面
@@ -46,7 +53,7 @@ Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 * Bug修复
 
 = 1.7 =
-* 方便Ajax加载,添加全局函数window.hermit_ajax
+* 方便Ajax加载,添加全局函数window.hermit_ajax，此方法已废除
 
 = 1.6 =
 * 重写插件菜单页面
@@ -97,7 +104,7 @@ Hermit 音乐播放器：支持Html5+Flash的音乐播放器。
 * 修复 box-sizing = border-box 下错位的问题
 
 = 1.1.1 =
-* 暴漏一个 window.hermitInit()用来确保Ajax加载页面中音乐的正常播放，具体的例子参考：http://imufeng.github.io/hermit-ajax.html
+* 暴漏一个 `window.hermitInit()` 此方法已作废
 
 = 1.1.0 =
 * 添加静音按钮
