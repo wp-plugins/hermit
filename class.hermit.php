@@ -53,7 +53,6 @@ class hermit{
 		wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/js/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, $jsplace);
 		wp_localize_script( 'hermit-js', 'hermit', array(
 														"url" => HERMIT_URL . '/assets/swf/',
-														"nonce" => wp_create_nonce("hermit-nonce"),
 														"ajax_url" =>  admin_url() . "admin-ajax.php",
 														"text_tips" => $tips
 													));
@@ -93,71 +92,65 @@ class hermit{
 		$id = $_GET['id'];
 		$nonce = $_SERVER['HTTP_NONCE'];
 
-		if ( !wp_verify_nonce($nonce, "hermit-nonce") ) {
-			$result = array(
-				'status' =>  500,
-				'msg' =>  '非法请求'
-			);
-		}else{
-			switch ($scope) {
-				//虾米部分
-				case 'songs' :
-					$result = array(
-						'status' => 200,
-						'msg' => $HMTJSON->song_list($id)
-					);
-					break;
 
-				case 'album':
-					$result = array(
-						'status' =>  200,
-						'msg' => $HMTJSON->album($id)
-					);
-					break;
+		switch ($scope) {
+			//虾米部分
+			case 'songs' :
+				$result = array(
+					'status' => 200,
+					'msg' => $HMTJSON->song_list($id)
+				);
+				break;
 
-				case 'collect':
-					$result = array(
-						'status' =>  200,
-						'msg' =>  $HMTJSON->collect($id)
-					);
-					break;
+			case 'album':
+				$result = array(
+					'status' =>  200,
+					'msg' => $HMTJSON->album($id)
+				);
+				break;
 
-				//网易音乐部分
-				case 'netease_songs' :
-					$result = array(
-						'status' => 200,
-						'msg' => $HMTJSON->netease_songs($id)
-					);
-					break;
+			case 'collect':
+				$result = array(
+					'status' =>  200,
+					'msg' =>  $HMTJSON->collect($id)
+				);
+				break;
 
-				case 'netease_album':
-					$result = array(
-						'status' => 200,
-						'msg' => $HMTJSON->netease_album($id)
-					);
-					break;
+			//网易音乐部分
+			case 'netease_songs' :
+				$result = array(
+					'status' => 200,
+					'msg' => $HMTJSON->netease_songs($id)
+				);
+				break;
 
-				case 'netease_playlist':
-					$result = array(
-						'status' => 200,
-						'msg' => $HMTJSON->netease_playlist($id)
-					);
-					break;	
+			case 'netease_album':
+				$result = array(
+					'status' => 200,
+					'msg' => $HMTJSON->netease_album($id)
+				);
+				break;
 
-				//本地音乐部分
-				case 'remote':
-					$result = array(
-						'status' =>  200,
-						'msg' =>  $this->music_remote($id)
-					);
-					break;						
-				
-				default:
-					$result = array(
-						'status' =>  400,
-						'msg' =>  null
-					);
-			}
+			case 'netease_playlist':
+				$result = array(
+					'status' => 200,
+					'msg' => $HMTJSON->netease_playlist($id)
+				);
+				break;	
+
+			//本地音乐部分
+			case 'remote':
+				$result = array(
+					'status' =>  200,
+					'msg' =>  $this->music_remote($id)
+				);
+				break;						
+			
+			default:
+				$result = array(
+					'status' =>  400,
+					'msg' =>  null
+				);
 		}
 
 		header('Content-type: application/json');
