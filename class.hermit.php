@@ -71,7 +71,7 @@ class hermit{
         $color = $this->config['color'];
 		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
 
-		return '<!--Hermit for wordpress v'.HERMIT_VERSION.' start--><div class="hermit hermit-'.$color.'" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.HERMIT_VERSION.' end-->';
+		return '<!--Hermit for wordpress v'.HERMIT_VERSION.' start--><div class="hermit hermit-'.$color.'" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-orderbutton"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.HERMIT_VERSION.' end-->';
 	}
 	
 	/**

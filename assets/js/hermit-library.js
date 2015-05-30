@@ -294,4 +294,612 @@ else{var g=a.$$hashKey;H(a)?a.length=0:s(a,function(b,c){delete a[c]});for(f in 
 * @author MuFeng (http://mufeng.me)
 * @url http://mufeng.me/hermit-for-wordpress.html
 **/
-(function(window){var HTApp=angular.module('HTApp',['ngRoute','ngResource']);HTApp.config(function($routeProvider){var roterConfig={controller:'IndexCtl',templateUrl:hermit.tmpl_url+'index.html'};$routeProvider.when('/',roterConfig).when('/page/:paged',roterConfig).when('/cat/:catid',roterConfig).when('/cat/:catid/page/:paged',roterConfig).otherwise({redirectTo:'/'})});window.HTApp=HTApp})(window);(function(){HTApp.controller('AlertCtl',function($scope,HTAppAlert){var ac=this;ac.HTAppAlert=HTAppAlert;return this})})();(function(){HTApp.controller('IndexCtl',function($scope,$routeParams,HTAppAlert,HTAppShare,HTAppHttp){$scope.HTAppShare=HTAppShare;$scope.paged=$routeParams.paged?$routeParams.paged:1;$scope.catid=$routeParams.catid;$scope.count=0;$scope.max_page=0;$scope.Alert={};$scope.checkBoxChange=function(){jQuery.each($scope.musics,function(key,value){value.selected=$scope.checkBoxValue})};$scope.add={_init:function(){$scope.add.display=false;$scope.add.data={type:"new",action:"hermit_source"};$scope.add.error={}},hide:function(){$scope.add.display=false},show:function(){$scope.add._init();$scope.add.display=true;$scope.add.data.song_cat=HTAppShare._menu[0].id},post:function(){music_add($scope,HTAppAlert,HTAppShare,HTAppHttp)}};$scope.edit={_init:function(){$scope.edit.display=false;$scope.edit.data={};$scope.edit.error={};$scope.edit.index=null},hide:function(){$scope.edit.display=false},show:function(index){$scope.edit._init();$scope.edit.display=true;$scope.edit.data=$scope.musics[index];$scope.edit.data.type="update";$scope.edit.data.action="hermit_source";$scope.edit.index=index},post:function(){music_update($scope,HTAppAlert,HTAppShare,HTAppHttp)}};$scope.delMusicClick=function(){music_delete($scope,HTAppAlert,HTAppShare,HTAppHttp)};$scope.moveToCat=function(cat){music_cat_move($scope,cat,HTAppAlert,HTAppShare,HTAppHttp)};get_data($scope,HTAppAlert,HTAppHttp)});function music_cat_move($scope,cat,HTAppAlert,HTAppShare,HTAppHttp){var id_array=[];jQuery.each($scope.musics,function(key,value){if(value.selected){id_array.push(value.id)}});if(id_array.length<1){HTAppAlert.showAlert({status:'err',message:'尚未选中任何项目。',timeout:5});return}HTAppAlert.showAlert({status:'loading',message:'将'+id_array.length+'首音乐移动至分类<'+cat.title+'>中...'});HTAppHttp.post({url:hermit.ajax_url,data:{action:'hermit_source',type:'move',ids:id_array.join(','),catid:cat.id},success:function(response){HTAppAlert.showAlert({status:'success',message:'移动至分类<'+cat.title+'>成功!',timeout:5});HTAppShare.redataCat();get_data($scope,HTAppAlert,HTAppHttp)},error:function(data,status){HTAppAlert.showAlert({status:'err',message:'移动至分类<'+cat.title+'>失败，请稍后重试',timeout:5});console.log(data,status)}})}function music_add($scope,HTAppAlert,HTAppShare,HTAppHttp){var check_array=['song_name','song_author','song_url'];for(var i=0;i<3;i++){var key=check_array[i];if($scope.add.data[key]===undefined||1>$scope.add.data[key].length){$scope.add.error[key]=true;return}}$scope.add.hide();HTAppAlert.showAlert({status:'loading',message:'添加音乐中...'});HTAppHttp.post({url:hermit.ajax_url,data:$scope.add.data,success:function(response){HTAppAlert.showAlert({status:'success',message:'《'+response.song_name+'》添加成功!',timeout:5});HTAppShare.redataCat();$scope.musics.unshift(response)},error:function(data,status){HTAppAlert.showAlert({status:'err',message:'添加失败，请稍后重试',timeout:5});console.log(data,status)}})}function music_delete($scope,HTAppAlert,HTAppShare,HTAppHttp){var id_array=[];jQuery.each($scope.musics,function(key,value){if(value.selected){id_array.push(value.id)}});if(id_array.length<1){HTAppAlert.showAlert({status:'err',message:'尚未选中任何项目。',timeout:5});return}var _confirm=window.confirm('确认删除'+id_array.length+'首音乐？');if(_confirm){HTAppAlert.showAlert({status:'loading',message:'数据提交中...'});HTAppHttp.post({url:hermit.ajax_url,data:{action:'hermit_source',type:'delete',ids:id_array.join(',')},success:function(response){HTAppAlert.showAlert({status:'success',message:'删除成功!',timeout:5});HTAppShare.redataCat();get_data($scope,HTAppAlert,HTAppHttp)},error:function(data,status){HTAppAlert.showAlert({status:'err',message:'删除失败，请稍后重试',timeout:5});console.log(data,status)}})}else{HTAppAlert.hideAlert()}}function music_update($scope,HTAppAlert,HTAppShare,HTAppHttp){var check_array=['song_name','song_author','song_url'];for(var i=0;i<3;i++){var key=check_array[i];if($scope.edit.data[key]===undefined||1>$scope.edit.data[key].length){$scope.edit.error[key]=true;return}}$scope.edit.hide();HTAppAlert.showAlert({status:'loading',message:'数据提交中...'});HTAppHttp.post({url:hermit.ajax_url,data:$scope.edit.data,success:function(response){HTAppAlert.showAlert({status:'success',message:'《'+$scope.edit.data.song_name+'》修改成功!',timeout:5});HTAppShare.redataCat();$scope.musics[$scope.edit.index]=response},error:function(data,status){HTAppAlert.showAlert({status:'err',message:'《'+$scope.edit.song_name+'》修改失败，请稍后重试',timeout:5});console.log(data,status)}})}function get_data($scope,HTAppAlert,HTAppHttp){HTAppAlert.showAlert({status:'loading',message:'数据加载中...'});var params;if($scope.catid){params={action:'hermit_source',type:'cat',catid:$scope.catid,paged:$scope.paged}}else{params={action:'hermit_source',type:'index',paged:$scope.paged}}HTAppHttp.get({url:hermit.ajax_url,data:params,success:function(response){$scope.musics=response.data;$scope.paged=response.paged;$scope.max_page=response.max_page;$scope.count=response.count;HTAppAlert.showAlert({status:'success',message:'音乐列表加载成功!',timeout:5})},error:function(data,status){HTAppAlert.showAlert({status:'err',message:'音乐列表加载失败!',timeout:5});console.log(data,status)}})}})();(function(){HTApp.controller('MainCtl',function($scope,$route,HTAppLocation){$scope.HTAppLocation=HTAppLocation;$scope.$on("$routeChangeStart",function(event,current,previous,rejection){HTAppLocation.current=current.params.catid?'/cat/'+current.params.catid:'/'})})})();(function(){HTApp.controller('MenuCtl',function($timeout,HTAppAlert,HTAppShare,HTAppLocation,HTAppHttp){var mc=this;mc.HTAppShare=HTAppShare;mc.HTAppLocation=HTAppLocation;mc.actionOpen=false;mc.catOpen=false;mc.catLayerShow=function(){mc.newLayer=true};mc.catLayerHide=function(){mc.newLayer=false;mc.newCatTitleError=null;mc.newCatTitle=null};mc.newCatClick=function(){if(mc.newCatTitle===undefined||mc.newCatTitle===''){mc.newCatTitleError='请输入正确的分类名称'}else{cat_new_post(mc,HTAppAlert,HTAppShare,HTAppHttp)}};HTAppShare.redataCat=function(){menu_get(mc,HTAppShare,HTAppHttp)};menu_get(mc,HTAppShare,HTAppHttp);return this});function menu_get(mc,HTAppShare,HTAppHttp){HTAppHttp.get({url:hermit.ajax_url,data:{action:'hermit_source',type:'catlist'},success:function(response){mc.menus=response;HTAppShare._menu=response.slice(1)},error:function(data,status){console.log(data,status)}})}function cat_new_post(mc,HTAppAlert,HTAppShare,HTAppHttp){HTAppAlert.showAlert({status:'loading',message:'分类<'+mc.newCatTitle+'>添加中...'});HTAppHttp.post({url:hermit.ajax_url,data:{action:'hermit_source',type:'catnew',title:mc.newCatTitle},success:function(response){HTAppAlert.showAlert({status:'success',message:'分类<'+mc.newCatTitle+'>添加成功!',timeout:5});mc.catLayerHide();menu_get(mc,HTAppShare,HTAppHttp)},error:function(data,status){mc.newCatTitleError=data}})}})();(function(){HTApp.factory('HTAppAlert',function($timeout){var alert={status:null,timeout:null,message:'',promise:null};return{showAlert:function(options){alert={status:options.status,timeout:options.timeout,message:options.message};if(options.timeout){var self=this;$timeout.cancel(alert.promise);alert.promise=$timeout(function(){self.hideAlert()},options.timeout*1000)}},hideAlert:function(){$timeout.cancel(alert.promise);alert={status:null,timeout:null,message:'',promise:null}},getAlert:function(){return{status:alert.status,message:alert.message}}}})})();(function(){HTApp.factory("HTAppHttp",function($http){return{get:function($param){$http({url:$param.url,params:$param.data}).success(function(data){$param.success.call(null,data)}).error(function(data,status,headers,config){$param.error.call(null,data,status)})},post:function($param){$http({method:'post',url:$param.url,data:$param.data,headers:{'Content-Type':'application/x-www-form-urlencoded'},transformRequest:function(obj){return jQuery.param(obj)}}).success(function(data,status,headers,config){$param.success.call(null,data)}).error(function(data,status,headers,config){$param.error.call(null,data,status)})}}})})();(function(){HTApp.factory('HTAppLocation',function(){return{current:'/'}})})();(function(){HTApp.factory('HTAppShare',function(){return{}})})();
+(function(window) {
+
+    // 新建Angularjs模型
+    var HTApp = angular.module('HTApp', ['ngRoute', 'ngResource']);
+
+    // 路由设置
+    HTApp.config(function ($routeProvider) {
+        var roterConfig = {
+            controller: 'IndexCtl',
+            templateUrl: hermit.tmpl_url + 'index.html'
+        };
+
+        $routeProvider
+            .when('/', roterConfig)
+            .when('/page/:paged', roterConfig)
+            .when('/cat/:catid', roterConfig)
+            .when('/cat/:catid/page/:paged', roterConfig)
+            .otherwise({
+                redirectTo: '/'
+            });
+    });
+
+    // 全局化
+    window.HTApp = HTApp;
+
+})(window);
+(function () {
+    HTApp.controller('AlertCtl', function($scope, HTAppAlert){
+        var ac = this;
+        ac.HTAppAlert = HTAppAlert;
+
+        return this;
+    });
+})();
+(function () {
+    HTApp.controller('IndexCtl', function($scope, $routeParams, HTAppAlert, HTAppShare, HTAppHttp){
+
+        //从MenuCtl共享分类数据
+        $scope.HTAppShare = HTAppShare;
+
+        // 页数
+        $scope.paged = $routeParams.paged ? $routeParams.paged : 1;
+
+        // 分类ID
+        $scope.catid = $routeParams.catid;
+
+        // 音乐总数
+        $scope.count = 0;
+
+        // 最大页面
+        $scope.max_page = 0;
+
+        //提醒层
+        $scope.Alert = {};
+
+        //checkbox 全选
+        $scope.checkBoxChange = function(){
+            jQuery.each($scope.musics, function(key, value){
+                value.selected = $scope.checkBoxValue;
+            });
+        };
+
+        //新建音乐
+        $scope.add = {
+            _init: function(){
+                $scope.add.display = false;
+                $scope.add.data = {
+                    type: "new",
+                    action: "hermit_source"
+                };
+                $scope.add.error = {};
+            },
+            hide: function(){
+                $scope.add.display = false;
+            },
+            show: function(){
+                $scope.add._init();
+                $scope.add.display = true;
+                $scope.add.data.song_cat = HTAppShare._menu[0].id;
+            },
+            post: function(){
+                music_add($scope, HTAppAlert, HTAppShare, HTAppHttp);
+            }
+        };
+
+        //编辑音乐
+        $scope.edit = {
+            _init: function(){
+                $scope.edit.display = false;
+                $scope.edit.data = {};
+                $scope.edit.error = {};
+                $scope.edit.index = null;
+            },
+            hide: function(){
+                $scope.edit.display = false;
+            },
+            show: function(index){
+                $scope.edit._init();
+                $scope.edit.display = true;
+                $scope.edit.data = $scope.musics[index];
+                $scope.edit.data.type = "update";
+                $scope.edit.data.action = "hermit_source";
+                $scope.edit.index = index;
+            },
+            post: function(){
+                music_update($scope, HTAppAlert, HTAppShare, HTAppHttp);
+            }
+        };
+
+        // 删除音乐
+        $scope.delMusicClick = function(){
+            music_delete($scope, HTAppAlert, HTAppShare, HTAppHttp);
+        };
+
+        // 移动分类
+        $scope.moveToCat = function(cat){
+            music_cat_move($scope, cat, HTAppAlert, HTAppShare, HTAppHttp);
+        };
+
+        //拉取数据
+        get_data($scope, HTAppAlert, HTAppHttp);
+    });
+
+    function music_cat_move($scope, cat, HTAppAlert, HTAppShare, HTAppHttp){
+        var id_array = [];
+
+        jQuery.each($scope.musics, function(key, value){
+            if( value.selected ){
+                id_array.push(value.id);
+            }
+        });
+
+        if( id_array.length < 1 ){
+            HTAppAlert.showAlert({
+                status: 'err',
+                message: '尚未选中任何项目。',
+                timeout: 5
+            });
+
+            return;
+        }
+
+        HTAppAlert.showAlert({
+            status: 'loading',
+            message: '将'+id_array.length+'首音乐移动至分类<'+cat.title+'>中...'
+        });
+
+        HTAppHttp.post({
+            url: hermit.ajax_url,
+            data: {
+                action: 'hermit_source',
+                type: 'move',
+                ids: id_array.join(','),
+                catid: cat.id
+            },
+            success: function(response){
+                HTAppAlert.showAlert({
+                    status: 'success',
+                    message: '移动至分类<'+cat.title+'>成功!',
+                    timeout: 5
+                });
+
+                HTAppShare.redataCat();
+                get_data($scope, HTAppAlert, HTAppHttp);
+            },
+            error: function(data, status){
+                HTAppAlert.showAlert({
+                    status: 'err',
+                    message: '移动至分类<'+cat.title+'>失败，请稍后重试',
+                    timeout: 5
+                });
+
+                console.log(data, status);
+            }
+        });
+    }
+
+    function music_add($scope, HTAppAlert, HTAppShare, HTAppHttp){
+        var check_array = ['song_name', 'song_author', 'song_url'];
+        for(var i=0; i<3; i++){
+            var key = check_array[i];
+
+            if( $scope.add.data[key] === undefined || 1 > $scope.add.data[key].length){
+                $scope.add.error[key] = true;
+                return;
+            }
+        }
+
+        $scope.add.hide();
+
+        HTAppAlert.showAlert({
+            status: 'loading',
+            message: '添加音乐中...'
+        });
+
+        HTAppHttp.post({
+            url: hermit.ajax_url,
+            data: $scope.add.data,
+            success: function(response){
+                HTAppAlert.showAlert({
+                    status: 'success',
+                    message: '《'+response.song_name+'》添加成功!',
+                    timeout: 5
+                });
+
+                HTAppShare.redataCat();
+
+                $scope.musics.unshift(response);
+            },
+            error: function(data, status){
+                HTAppAlert.showAlert({
+                    status: 'err',
+                    message: '添加失败，请稍后重试',
+                    timeout: 5
+                });
+
+                console.log(data, status);
+            }
+        });
+    }
+
+    function music_delete($scope, HTAppAlert, HTAppShare, HTAppHttp){
+        var id_array = [];
+
+        jQuery.each($scope.musics, function(key, value){
+            if( value.selected ){
+                id_array.push(value.id);
+            }
+        });
+
+        if( id_array.length < 1 ){
+            HTAppAlert.showAlert({
+                status: 'err',
+                message: '尚未选中任何项目。',
+                timeout: 5
+            });
+
+            return;
+        }
+
+        var _confirm = window.confirm('确认删除'+id_array.length+'首音乐？');
+
+        if( _confirm ){
+            HTAppAlert.showAlert({
+                status: 'loading',
+                message: '数据提交中...'
+            });
+
+            HTAppHttp.post({
+                url: hermit.ajax_url,
+                data: {
+                    action: 'hermit_source',
+                    type: 'delete',
+                    ids: id_array.join(',')
+                },
+                success: function(response){
+                    HTAppAlert.showAlert({
+                        status: 'success',
+                        message: '删除成功!',
+                        timeout: 5
+                    });
+
+                    HTAppShare.redataCat();
+                    get_data($scope, HTAppAlert, HTAppHttp);
+                },
+                error: function(data, status){
+                    HTAppAlert.showAlert({
+                        status: 'err',
+                        message: '删除失败，请稍后重试',
+                        timeout: 5
+                    });
+
+                    console.log(data, status);
+                }
+            });
+        }else{
+            HTAppAlert.hideAlert();
+        }
+    }
+
+    function music_update($scope, HTAppAlert, HTAppShare, HTAppHttp){
+        var check_array = ['song_name', 'song_author', 'song_url'];
+        for(var i=0; i<3; i++){
+            var key = check_array[i];
+
+            if( $scope.edit.data[key] === undefined || 1 > $scope.edit.data[key].length){
+                $scope.edit.error[key] = true;
+                return;
+            }
+        }
+
+        $scope.edit.hide();
+
+        HTAppAlert.showAlert({
+            status: 'loading',
+            message: '数据提交中...'
+        });
+
+        HTAppHttp.post({
+            url: hermit.ajax_url,
+            data: $scope.edit.data,
+            success: function(response){
+                HTAppAlert.showAlert({
+                    status: 'success',
+                    message: '《'+$scope.edit.data.song_name+'》修改成功!',
+                    timeout: 5
+                });
+
+                HTAppShare.redataCat();
+
+                $scope.musics[$scope.edit.index] = response;
+            },
+            error: function(data, status){
+                HTAppAlert.showAlert({
+                    status: 'err',
+                    message: '《'+$scope.edit.song_name+'》修改失败，请稍后重试',
+                    timeout: 5
+                });
+
+                console.log(data, status);
+            }
+        });
+    }
+
+    function get_data($scope, HTAppAlert, HTAppHttp){
+        HTAppAlert.showAlert({
+            status: 'loading',
+            message: '数据加载中...'
+        });
+
+        var params;
+
+        if( $scope.catid ){
+            params = {
+                action: 'hermit_source',
+                type: 'cat',
+                catid: $scope.catid,
+                paged: $scope.paged
+            };
+        }else{
+            params = {
+                action: 'hermit_source',
+                type: 'index',
+                paged: $scope.paged
+            };
+        }
+
+        HTAppHttp.get({
+            url: hermit.ajax_url,
+            data: params,
+            success: function(response){
+                $scope.musics = response.data;
+                $scope.paged = response.paged;
+                $scope.max_page = response.max_page;
+                $scope.count = response.count;
+
+                HTAppAlert.showAlert({
+                    status: 'success',
+                    message: '音乐列表加载成功!',
+                    timeout: 5
+                });
+            },
+            error: function(data, status){
+                HTAppAlert.showAlert({
+                    status: 'err',
+                    message: '音乐列表加载失败!',
+                    timeout: 5
+                });
+
+                console.log(data, status);
+            }
+        });
+    }
+})();
+
+(function () {
+    HTApp.controller('MainCtl', function($scope, $route, HTAppLocation){
+        $scope.HTAppLocation = HTAppLocation;
+
+        $scope.$on("$routeChangeStart",
+            function (event, current, previous, rejection) {
+                HTAppLocation.current = current.params.catid ? '/cat/' + current.params.catid : '/';
+            });
+    });
+})();
+(function () {
+    HTApp.controller('MenuCtl', function($timeout, HTAppAlert, HTAppShare, HTAppLocation, HTAppHttp){
+        var mc = this;
+
+        //共享数据
+        mc.HTAppShare = HTAppShare;
+
+        //共享的地址
+        mc.HTAppLocation = HTAppLocation;
+
+        //操作按钮
+        mc.actionOpen = false;
+
+        //下拉菜单
+        mc.catOpen = false;
+
+        //显示遮罩层
+        mc.catLayerShow = function(){
+            mc.newLayer = true;
+        };
+
+        //隐藏遮罩层
+        mc.catLayerHide = function(){
+            mc.newLayer = false;
+            mc.newCatTitleError = null;
+            mc.newCatTitle = null;
+        };
+
+        //新建分类
+        mc.newCatClick = function(){
+            if( mc.newCatTitle === undefined || mc.newCatTitle === ''){
+                mc.newCatTitleError = '请输入正确的分类名称';
+            }else{
+                cat_new_post(mc, HTAppAlert, HTAppShare, HTAppHttp);
+            }
+        };
+
+        // 刷新菜单数据
+        HTAppShare.redataCat = function(){
+
+            menu_get(mc, HTAppShare, HTAppHttp);
+        };
+
+        //拉取菜单数据
+        menu_get(mc, HTAppShare, HTAppHttp);
+
+        return this;
+    });
+
+    function menu_get(mc, HTAppShare, HTAppHttp){
+        HTAppHttp.get({
+            url: hermit.ajax_url,
+            data: {
+                action: 'hermit_source',
+                type: 'catlist'
+            },
+            success: function(response){
+                mc.menus = response;
+                HTAppShare._menu = response.slice(1);
+            },
+            error: function(data, status){
+                console.log(data, status);
+            }
+        });
+    }
+
+    function cat_new_post(mc, HTAppAlert, HTAppShare, HTAppHttp){
+        HTAppAlert.showAlert({
+            status: 'loading',
+            message: '分类<'+mc.newCatTitle+'>添加中...'
+        });
+
+        HTAppHttp.post({
+            url: hermit.ajax_url,
+            data: {
+                action: 'hermit_source',
+                type: 'catnew',
+                title: mc.newCatTitle
+            },
+            success: function(response){
+                HTAppAlert.showAlert({
+                    status: 'success',
+                    message: '分类<'+mc.newCatTitle+'>添加成功!',
+                    timeout: 5
+                });
+
+                mc.catLayerHide();
+
+                // 重新拉去菜单数据
+                // 刷新左侧菜单
+                // 刷新新建音乐需要的分类select
+                menu_get(mc, HTAppShare, HTAppHttp);
+            },
+            error: function(data, status){
+                mc.newCatTitleError = data;
+            }
+        });
+    }
+
+})();
+
+(function () {
+
+    /**
+     * 交互提醒
+     *
+     * @return mixed
+     */
+    HTApp.factory('HTAppAlert', function($timeout) {
+        var alert = {
+                status: null,
+                timeout: null,
+                message: '',
+                promise: null
+            };
+
+        return {
+            showAlert: function(options){
+                alert = {
+                    status: options.status,
+                    timeout: options.timeout,
+                    message: options.message
+                };
+
+                if( options.timeout ){
+                    var self = this;
+
+                    // 停止计时
+                    $timeout.cancel(alert.promise);
+
+                    // 重新计时
+                    alert.promise = $timeout(function () {
+                        self.hideAlert();
+                    }, options.timeout*1000);
+                }
+            },
+
+            hideAlert: function(){
+                // 停止计时
+                $timeout.cancel(alert.promise);
+
+                alert = {
+                    status: null,
+                    timeout: null,
+                    message: '',
+                    promise: null
+                };
+            },
+
+            getAlert: function(){
+                return {
+                    status: alert.status,
+                    message: alert.message
+                };
+            }
+        };
+    });
+
+})();
+
+(function () {
+    /**
+     * $http 工厂模式
+     */
+    HTApp.factory("HTAppHttp", function($http) {
+        return {
+            get: function($param) {
+                $http({
+                    url: $param.url,
+                    params: $param.data
+                }).success(function(data) {
+                    $param.success.call(null, data);
+                }).error(function(data, status, headers, config){
+                    $param.error.call(null, data, status);
+                });
+            },
+            post: function($param){
+                $http({
+                    method: 'post',
+                    url: $param.url,
+                    data: $param.data,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    transformRequest: function(obj) {
+                        return jQuery.param(obj);
+                    }
+                }).success(function(data, status, headers, config){
+                    $param.success.call(null, data);
+                }).error(function(data, status, headers, config){
+                    $param.error.call(null, data, status);
+                });
+            }
+        };
+    });
+})();
+
+(function () {
+
+    /**
+     * 交互提醒
+     *
+     * @return mixed
+     */
+    HTApp.factory('HTAppLocation', function() {
+        return {
+            current: '/'
+        };
+    });
+
+})();
+
+(function () {
+
+    /**
+     * 多个 controller 之间共享数据
+     *
+     * @return mixed
+     */
+    HTApp.factory('HTAppShare', function() {
+        return {};
+    });
+
+})();

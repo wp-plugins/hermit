@@ -10,7 +10,7 @@
 					<th scope="row"><label>播放器提示</label></th>
 					<td>
 						<p><input type="text" class="regular-text" name="hermit_setting[tips]" value="<?php echo $settings['tips']; ?>" /></p>
-						<p class="description">默认显示：<strong>单击鼠标左键播放或暂停。</strong>为空则不显示任何文字。</p>
+						<p>默认显示：<strong>单击鼠标左键播放或暂停。</strong>为空则不显示任何文字。</p>
 					</td>
 				</tr>
 				<tr valign="top">
@@ -26,7 +26,7 @@
                                 <input type="radio" name="hermit_setting[strategy]" value="2" <?php if($settings['strategy']==2) echo 'checked="checked"';?>> <span>全局加载</span>
                             </label>
                         </p>
-						<p class="description">默认：<strong>按需加载</strong>，只有文章列表中使用了短代码才会加载CSS、JS资源。<br />全局加载：无论是否使用了短代码都会加载，适合侧边栏。</p>
+						<p>默认：<strong>按需加载</strong>，只有文章列表中使用了短代码才会加载CSS、JS资源。<br />全局加载：无论是否使用了短代码都会加载，适合侧边栏。</p>
 					</td>
 				</tr>
                 <tr valign="top">
@@ -42,32 +42,29 @@
                                 <input type="radio" name="hermit_setting[jsplace]" value="1" <?php if($settings['jsplace']==1) echo 'checked="checked"';?>/> <span>页面底部</span>
                             </label>
                         </p>
-                        <p class="description">默认：<strong>页面顶部</strong></p>
+                        <p>默认：<strong>页面顶部</strong></p>
                     </td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><label>颜色选择</label></th>
                     <td>
-                        <p>
-                            <label title="默认颜色">
-                                <input type="radio" name="hermit_setting[color]" value="default" <?php if($settings['color']=='default') echo 'checked="checked"';?>/> <span>默认</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label title="新年红">
-                                <input type="radio" name="hermit_setting[color]" value="red" <?php if($settings['color']=='red') echo 'checked="checked"';?>/> <span>新年红</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label title="青葱绿">
-                                <input type="radio" name="hermit_setting[color]" value="blue" <?php if($settings['color']=='blue') echo 'checked="checked"';?>/> <span>青葱绿</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label title="淡淡黄">
-                                <input type="radio" name="hermit_setting[color]" value="yellow" <?php if($settings['color']=='yellow') echo 'checked="checked"';?>/> <span>淡淡黄</span>
-                            </label>
-                        </p>
+                        <?php $color_array = array(
+                                'default' => '默认',
+                                'red' => '新年红',
+                                'blue' => '青葱绿',
+                                'yellow' => '淡淡黄',
+                                'pink' => '闷骚粉',
+                                'purple' => '基情紫',
+                                'black' => '暗色灰'
+                            );
+                            foreach ($color_array as $key => $title) {?>
+                                <p>
+                                    <label title="<?php echo $title;?>">
+                                        <input type="radio" name="hermit_setting[color]" value="<?php echo $key;?>" <?php if($settings['color']==$key) echo 'checked="checked"';?>/> <span><?php echo $title;?></span>
+                                    </label>
+                                </p>
+                            <?php }
+                        ?>
                     </td>
                 </tr>
 				<tr valign="top">
