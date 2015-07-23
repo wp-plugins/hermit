@@ -117,7 +117,7 @@ class HermitJson{
 			if(  $count < 1 ) return false;
 
 			$collect = array(
-				"collect_id" => $rcollect_id,
+				"collect_id" => $collect_id,
 				"collect_title" => '',
 				"collect_author" => '',
 				"collect_type" => "collects",

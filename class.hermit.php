@@ -90,8 +90,6 @@ class hermit{
 
 		$scope = $_GET['scope'];
 		$id = $_GET['id'];
-		$nonce = $_SERVER['HTTP_NONCE'];
-
 
 		switch ($scope) {
 			//虾米部分

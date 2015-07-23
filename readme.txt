@@ -23,6 +23,12 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 == Changelog ==
 
+= 1.9.5 =
+* 修复BUG;
+
+= 1.9.4 =
+* 修复BUG;
+
 = 1.9.3 =
 * 修复BUG;
 
