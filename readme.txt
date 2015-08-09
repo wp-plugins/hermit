@@ -2,7 +2,7 @@
 Contributors: mufeng
 Tags: 虾米, 网易, html5, flash, 音乐, 播放器
 Requires at least: 3.0
-Tested up to: 4.2.2
+Tested up to: 4.3
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -22,6 +22,9 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 2. 在后台插件菜单激活该插件
 
 == Changelog ==
+
+= 1.9.6 =
+* 支持Wordpress 4.3;
 
 = 1.9.5 =
 * 修复BUG;
