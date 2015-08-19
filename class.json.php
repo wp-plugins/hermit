@@ -298,6 +298,77 @@ class HermitJson{
 		return false;
 	}
 
+	public function netease_radio($radio_id)
+	{
+		$key = "/netease/radios/$radio_id";
+
+		$cache = $this->get_cache($key);
+		if( $cache ) return $cache;
+
+		$response = $this->netease_radio_http($radio_id);
+
+		if( $response["code"]==200 && $response["programs"] ){
+			//处理音乐信息
+			$result = $response["programs"];
+			$count = count($result);
+
+			if( $count < 1 ) return false;
+
+			$collect = array(
+				"collect_id" => $radio_id,
+				"collect_title" => '',
+				"collect_author" => '',
+				"collect_type" => "radios",
+				"collect_count" => $count
+			);
+
+			foreach($result as $k => $val){
+				$collect["songs"][] = array(
+					"song_id" => $val['mainSong']['id'],
+					"song_title" => $val['mainSong']['name'],
+					"song_length" => "",
+					"song_src" => $val['mainSong']['mp3Url'],
+					"song_author" => $val['radio']['name']
+				);
+			}
+
+			$this->set_cache($key, $collect, 24);
+			return $collect;
+		}
+
+		return false;
+	}
+
+	private function netease_radio_http($radio_id)
+	{
+		$header = array(
+			"Accept:*/*",
+			"Accept-Language:zh-CN,zh;q=0.8",
+			"Cache-Control:no-cache",
+			"Connection:keep-alive",
+			"Content-Type:application/x-www-form-urlencoded;charset=UTF-8",
+			"Cookie:appver=2.9.1;",
+			"DNT:1",
+			"Host:music.163.com",
+			"Pragma:no-cache",
+			"Referer:http://music.163.com/outchain/player?type=4&id={$radio_id}&auto=1&height=430&bg=e8e8e8",
+			"User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.155 Safari/537.36"
+		);
+
+		$ch = curl_init("http://music.163.com/api/dj/program/byradio?radioId={$radio_id}&id={$radio_id}&ids=%5B%22{$radio_id}%22%5D&limit=100&offset=0");
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$cexecute = curl_exec($ch);
+		@curl_close($ch);
+
+		if ($cexecute) {
+			$result = json_decode($cexecute, true);
+			return $result;
+		}else{
+			return false;
+		}
+	}
+
 	private function netease_http($url)
 	{
 	    $refer = "http://music.163.com/";

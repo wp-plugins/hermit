@@ -23,6 +23,9 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 == Changelog ==
 
+= 2.0 =
+* 增加网易电台;
+
 = 1.9.6 =
 * 支持Wordpress 4.3;
 

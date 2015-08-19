@@ -134,7 +134,14 @@ class hermit{
 					'status' => 200,
 					'msg' => $HMTJSON->netease_playlist($id)
 				);
-				break;	
+				break;
+
+			case 'netease_radio':
+				$result = array(
+					'status' => 200,
+					'msg' => $HMTJSON->netease_radio($id)
+				);
+				break;
 
 			//本地音乐部分
 			case 'remote':
