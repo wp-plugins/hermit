@@ -9,29 +9,30 @@
                     </div>
                     <div class="media-frame-router clearfix">
                         <div class="media-router">
-                            <a href="javascript:;" class="media-menu-item active">虾米音乐</a>
-                            <a href="javascript:;" class="media-menu-item">网易音乐</a>
+                            <a href="javascript:;" class="media-menu-item active">网易音乐</a>
+                            <a href="javascript:;" class="media-menu-item">虾米音乐</a>
                             <a href="javascript:;" class="media-menu-item">本地音乐</a>
                         </div>
                         <a class="hermit-help" href="<?php echo admin_url("admin.php?page=hermit-help");?>" target="_blank">帮助?</a>
                     </div>
                     <div class="media-frame-content">
                         <ul class="hermit-ul">
-                            <li class="hermit-li active" data-type="xiami">
+                            <li class="hermit-li active" data-type="netease">
+                                <div>
+                                    <label><input type="radio" name="netease_type" value="netease_songs" checked="checked">单曲</label>
+                                    <label><input type="radio" name="netease_type" value="netease_album">专辑</label>
+                                    <label><input type="radio" name="netease_type" value="netease_playlist">歌单</label>
+                                    <label><input type="radio" name="netease_type" value="netease_radio">电台</label>
+                                </div>
+                                <textarea class="hermit-textarea large-text code" cols="30" rows="9" placeholder="输入网易云音乐音乐地址。。。"></textarea>
+                            </li>
+                            <li class="hermit-li" data-type="xiami">
                                 <div>
                                     <label><input type="radio" name="type" value="songlist" checked="checked">单曲</label>
                                     <label><input type="radio" name="type" value="album">专辑</label>
                                     <label><input type="radio" name="type" value="collect">精选集</label>
                                 </div>
                                 <textarea class="hermit-textarea large-text code" cols="30" rows="9" placeholder="输入虾米音乐地址。。。"></textarea>
-                            </li>
-                            <li class="hermit-li" data-type="netease">
-                                <div>
-                                    <label><input type="radio" name="netease_type" value="netease_songs" checked="checked">单曲</label>
-                                    <label><input type="radio" name="netease_type" value="netease_album">专辑</label>
-                                    <label><input type="radio" name="netease_type" value="netease_playlist">歌单</label>
-                                </div>
-                                <textarea class="hermit-textarea large-text code" cols="30" rows="9" placeholder="输入网易云音乐音乐地址。。。"></textarea>
                             </li>
                             <li class="hermit-li" data-type="remote">
                                 <div id="hermit-remote-content"><ul></ul><a id="hermit-remote-sure" class="button" href="javascript:;">确认选择</a></div>
