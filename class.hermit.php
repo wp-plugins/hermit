@@ -246,9 +246,9 @@ class hermit{
 		global $pagenow;
 
 		if( $pagenow == "post-new.php" || $pagenow == "post.php" ){
-			wp_enqueue_style('hermit-post', HERMIT_URL . '/assets/css/hermit.post.css');
+			wp_enqueue_style('hermit-post', HERMIT_URL . '/assets/css/hermit.post-' . HERMIT_VERSION . '.css');
 			wp_enqueue_script('handlebars', HERMIT_URL . '/assets/js/handlebars.js', false, HERMIT_VERSION, false);
-			wp_enqueue_script('hermit-post', HERMIT_URL . '/assets/js/hermit.post.js', false, HERMIT_VERSION, false);
+			wp_enqueue_script('hermit-post', HERMIT_URL . '/assets/js/hermit.post-' . HERMIT_VERSION . '.js', false, HERMIT_VERSION, false);
 
 			wp_localize_script( 'hermit-post', 'hermit', 
 				array(

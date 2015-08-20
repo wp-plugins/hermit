@@ -1,12 +1,3 @@
-/** 
-* @name Hermit
-* @version 1.9.4
-* @create 2014-02-07
-* @lastmodified 2015-06-01 13:26
-* @description Hermit Plugin
-* @author MuFeng (http://mufeng.me)
-* @url http://mufeng.me/hermit-for-wordpress.html
-**/
 /** @license
  *
  * SoundManager 2: JavaScript Sound for the Web
