@@ -1,8 +1,8 @@
 === Hermit 音乐播放器 ===
 Contributors: mufeng
 Tags: 虾米, 网易, html5, flash, 音乐, 播放器
-Requires at least: 3.0
-Tested up to: 4.3
+Requires at least: 3.5
+Tested up to: 4.3.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -23,9 +23,38 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 == Changelog ==
 
+= 2.1.5 =
+* 调整播放器界面;
+* 隐藏iOS 下音量图标;
+* 移动设备禁止自动播放;
+* 新增播放器音乐缓存方案;
+* 新增后台"添加音乐"权限管理选项;
+* hermitjs.reload(x) 增加参数;
+
+= 2.1.4 =
+* 修复本地音乐不显示的bug;
+
+= 2.1.3 =
+* 修复bug;
+
+= 2.1.2 =
+* 全新虾米音乐API;
+* 本地音乐增加上传功能;
+* 播放器样式调整;
+* 预增部分接口;
+
+= 2.1.1 =
+* 增加开发信息调试选项;
+* 相关API 调整;
+* 修复bug;
+
+= 2.1.0 =
+* 全新后台界面;
+* 全新音乐库管理界面;
+
 = 2.0.2 =
 * 增加网易电台;
-* 修复BUG;
+* 修复bug;
 
 = 2.0 =
 * 增加网易电台;
@@ -34,21 +63,21 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 * 支持Wordpress 4.3;
 
 = 1.9.5 =
-* 修复BUG;
+* 修复bug;
 
 = 1.9.4 =
-* 修复BUG;
+* 修复bug;
 
 = 1.9.3 =
-* 修复BUG;
+* 修复bug;
 
 = 1.9.2 =
-* 修复音量BUG;
+* 修复音量bug;
 * 添加暗色系配色;
 * 统一移动、桌面端样式;
 
 = 1.9.1 =
-* Bug修复;
+* 修复bug;
 
 = 1.9 =
 * 添加多颜色选择;
@@ -77,7 +106,7 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 * 本地音乐库Loading提示方式修改
 
 = 1.7.1 =
-* Bug修复
+* 修复bug;
 
 = 1.7 =
 * 方便Ajax加载,添加全局函数window.hermit_ajax，此方法已废除
@@ -110,9 +139,6 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 = 1.3.4 =
 * 添加选项是否显示封面
 
-= 1.3.3 =
-* 换个IP地址
-
 = 1.3.2 =
 * 修复部分bug
 
@@ -140,7 +166,7 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 * 后台添加资源加载选项
 
 = 1.0.4 =
-* 播放Bug修复
+* 播放bug修复
 * 添加自动播放
 * 添加循环播放
 
@@ -160,4 +186,4 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 * 服务器地址迁移回Bae
 
 = 1.0.0 =
-* 最初1.0.0版本发布
+* 初始版本发布

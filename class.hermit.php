@@ -1,173 +1,183 @@
 <?php
-class hermit{
-	public function __construct(){
-		$this->config = get_option('hermit_setting');
 
-		/**
-		** 事件绑定
-		**/
-		add_action('admin_menu', array($this, 'menu'));
-		add_shortcode('hermit',array($this,'shortcode'));
-		add_action('admin_init', array($this, 'page_init'));
-		add_action('wp_enqueue_scripts', array($this, 'hermit_scripts'));
-		add_action('media_buttons_context', array($this,'custom_button'));
-		add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
-		add_action( 'wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
-		add_action( 'wp_ajax_hermit', array($this, 'hermit_callback'));
+class hermit
+{
+    public function __construct()
+    {
+        $this->config = get_option('hermit_setting');
 
-		add_action('in_admin_footer', array($this, 'music_footer'));
+        /**
+         ** 事件绑定
+         **/
+        add_action('admin_menu', array($this, 'menu'));
+        add_shortcode('hermit', array($this, 'shortcode'));
+        add_action('admin_init', array($this, 'page_init'));
+        add_action('wp_enqueue_scripts', array($this, 'hermit_scripts'));
+        add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
+        add_action('wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
+        add_action('wp_ajax_hermit', array($this, 'hermit_callback'));
 
-		add_action( 'wp_ajax_nopriv_hermit_source', array($this, 'hermit_source_callback'));
-		add_action( 'wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
-	}
-	
-	/**
-	 * 载入所需要的CSS和js文件
-	 */	
-	public function hermit_scripts() {
-		$strategy = $this->config['strategy'];
+        add_action('in_admin_footer', array($this, 'music_footer'));
 
-		if( $strategy == 1 ){
-			global $post,$posts;
-			foreach ($posts as $post) {
-				if ( has_shortcode( $post->post_content, 'hermit') ){
-					$this->_load_scripts();
-					break;
-				}
-			}
-		}else{
-			$this->_load_scripts();
-		}
-	}
+        add_action('wp_ajax_nopriv_hermit_source', array($this, 'hermit_source_callback'));
+        add_action('wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
+    }
 
-	/**
-	 * 加载资源
-	 */
-	private function _load_scripts(){
-		$tips = $this->config['tips'];
-        $jsplace = (bool) $this->config['jsplace'];
+    /**
+     * 载入所需要的CSS和js文件
+     */
+    public function hermit_scripts()
+    {
+        $strategy = $this->settings('strategy');
 
-		wp_enqueue_style('hermit-css', HERMIT_URL . "/assets/css/hermit.min-" . HERMIT_VERSION . ".css", array(), HERMIT_VERSION, 'screen');
+        if ($strategy == 1) {
+            global $post, $posts;
+            foreach ($posts as $post) {
+                if (has_shortcode($post->post_content, 'hermit')) {
+                    $this->_load_scripts();
+                    break;
+                }
+            }
+        } else {
+            $this->_load_scripts();
+        }
+    }
+
+    /**
+     * 加载资源
+     */
+    private function _load_scripts()
+    {
+        $this->_css('hermit');
+        $this->_js('hermit', $this->settings('jsplace'));
+
+        wp_localize_script('hermit', 'hermit', array(
+            "url" => HERMIT_URL . '/assets/swf/',
+            "ajax_url" => admin_url() . "admin-ajax.php",
+            "text_tips" => $this->settings('tips'),
+            "remain_time" => $this->settings('remainTime'),
+            "debug" => $this->settings('debug'),
+            "version" => HERMIT_VERSION
+        ));
+    }
+
+    /**
+     * 添加文章短代码
+     */
+    public function shortcode($atts, $content = NULL)
+    {
+        extract(shortcode_atts(array(
+            'auto' => 0,
+            'loop' => 0,
+            'unexpand' => 0,
+            'fullheight' => 0
+        ), $atts));
+
+        $color = $this->settings('color');
+        $exClass = sprintf('hermit hermit-%s hermit-unexpand-%s hermit-fullheight-%s', $color, $unexpand, $fullheight);
+        $cover = HERMIT_URL . "/assets/images/cover@3x.png";
+
+        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box hermit-clear"><div class="hermit-cover"><img class="hermit-cover-image" src="' . $cover . '" width="80" height="80" /><div class="hermit-button"></div></div><div class="hermit-info"><div class="hermit-title"><div class="hermit-detail"></div></div><div class="hermit-controller"><div class="hermit-author"></div><div class="hermit-additive"><div class="hermit-duration">00:00/00:00</div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
+    }
+
+    /**
+     * 添加写文章按钮
+     */
+    public function custom_button($context)
+    {
+        $context .= "<a id='hermit-create' class='button' href='javascript:;' title='添加音乐'><img src='" . HERMIT_URL . "/assets/images/logo@2x.png' width='16' height='16' /> 添加音乐</a>";
+        return $context;
+    }
+
+    /**
+     * JSON 音乐数据
+     */
+    public function hermit_callback()
+    {
+        global $HMTJSON;
+
+        $scope = $_GET['scope'];
+        $id = $_GET['id'];
+
+        switch ($scope) {
+            //虾米部分
+            case 'songs' :
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->song_list($id)
+                );
+                break;
+
+            case 'album':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->album($id)
+                );
+                break;
+
+            case 'collect':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->collect($id)
+                );
+                break;
+
+            //网易音乐部分
+            case 'netease_songs' :
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->netease_songs($id)
+                );
+                break;
+
+            case 'netease_album':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->netease_album($id)
+                );
+                break;
+
+            case 'netease_playlist':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->netease_playlist($id)
+                );
+                break;
+
+            case 'netease_radio':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $HMTJSON->netease_radio($id)
+                );
+                break;
+
+            //本地音乐部分
+            case 'remote':
+                $result = array(
+                    'status' => 200,
+                    'msg' => $this->music_remote($id)
+                );
+                break;
+
+            default:
+                $result = array(
+                    'status' => 400,
+                    'msg' => NULL
+                );
+        }
+
+        //输出 JSON
+        $output = json_encode($result);
+        header('Content-type: application/json;charset=UTF-8');
+        exit($output);
+    }
 
 
-		wp_enqueue_script( 'hermit-js', HERMIT_URL . '/assets/js/hermit.min-'.HERMIT_VERSION.'.js', array(), HERMIT_VERSION, $jsplace);
-		wp_localize_script( 'hermit-js', 'hermit', array(
-														"url" => HERMIT_URL . '/assets/swf/',
-														"ajax_url" =>  admin_url() . "admin-ajax.php",
-														"text_tips" => $tips
-													));
-	}
-	
-	/**
-	 * 添加文章短代码
-	 */
-	public function shortcode($atts, $content=null){
-		extract(shortcode_atts(array(
-			'auto' => 0,
-			'loop' => 0,
-			'unexpand' => 0
-		), $atts));
-
-        $color = $this->config['color'];
-		$expandClass = ($unexpand==1) ? "hermit-list unexpand" : "hermit-list";
-
-		return '<!--Hermit for wordpress v'.HERMIT_VERSION.' start--><div class="hermit hermit-'.$color.'" auto="'.$auto.'" loop="'.$loop.'" songs="'.$content.'"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-orderbutton"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="'.$expandClass.'"></div></div><!--Hermit for wordpress v'.HERMIT_VERSION.' end-->';
-	}
-	
-	/**
-	 * 添加写文章按钮
-	 */
-	public function custom_button($context) {
-		$context .= "<a id='gohermit' class='button' href='javascript:;' title='添加音乐'><span class=\"wp-media-buttons-icon\"></span> 添加音乐</a>";
-		return $context;
-	}
-	
-	/**
-	 * JSON请求虾米数据
-	 */
-	public function hermit_callback() {
-		global $HMTJSON;
-
-		$scope = $_GET['scope'];
-		$id = $_GET['id'];
-
-		switch ($scope) {
-			//虾米部分
-			case 'songs' :
-				$result = array(
-					'status' => 200,
-					'msg' => $HMTJSON->song_list($id)
-				);
-				break;
-
-			case 'album':
-				$result = array(
-					'status' =>  200,
-					'msg' => $HMTJSON->album($id)
-				);
-				break;
-
-			case 'collect':
-				$result = array(
-					'status' =>  200,
-					'msg' =>  $HMTJSON->collect($id)
-				);
-				break;
-
-			//网易音乐部分
-			case 'netease_songs' :
-				$result = array(
-					'status' => 200,
-					'msg' => $HMTJSON->netease_songs($id)
-				);
-				break;
-
-			case 'netease_album':
-				$result = array(
-					'status' => 200,
-					'msg' => $HMTJSON->netease_album($id)
-				);
-				break;
-
-			case 'netease_playlist':
-				$result = array(
-					'status' => 200,
-					'msg' => $HMTJSON->netease_playlist($id)
-				);
-				break;
-
-			case 'netease_radio':
-				$result = array(
-					'status' => 200,
-					'msg' => $HMTJSON->netease_radio($id)
-				);
-				break;
-
-			//本地音乐部分
-			case 'remote':
-				$result = array(
-					'status' =>  200,
-					'msg' =>  $this->music_remote($id)
-				);
-				break;						
-			
-			default:
-				$result = array(
-					'status' =>  400,
-					'msg' =>  null
-				);
-		}
-
-		header('Content-type: application/json');
-		echo json_encode($result);
-		exit;
-	}	
-	
-
-	/**
-	 * 输出json数据
-	 */
-	function hermit_source_callback(){
+    /**
+     * 输出json数据
+     */
+    function hermit_source_callback()
+    {
         $type = $_REQUEST['type'];
 
         switch ($type) {
@@ -191,43 +201,33 @@ class hermit{
                 $this->success_response($result);
                 break;
 
-            case 'index':
-                $paged = intval($this->get('paged'));
-                $limit = 20;
-
-                $data = $this->music_list($paged);
-                $count = intval($this->music_count());
-                $max_page = ceil($count/$limit);
-
-                $result = compact('data', 'paged', 'max_page', 'count');
-                $this->success_response($result);
-                break;
-
-            case 'cat':
+            case 'list':
                 $paged = intval($this->get('paged'));
                 $catid = $this->get('catid');
-                $limit = 20;
+                $prePage = $this->settings('prePage');
+
+                $catid = $catid ? $catid : NULL;
 
                 $data = $this->music_list($paged, $catid);
-                $count = intval($this->music_count($catid));
-                $max_page = ceil($count/$limit);
+                $count = intval($this->music_count());
+                $maxPage = ceil($count / $prePage);
 
-                $result = compact('data', 'paged', 'max_page', 'count');
+                $result = compact('data', 'paged', 'maxPage', 'count');
                 $this->success_response($result);
                 break;
 
             case 'catlist':
-                $data = $this->music_cat_list();
+                $data = $this->music_catList();
                 $this->success_response($data);
                 break;
 
             case 'catnew':
                 $title = $this->post('title');
 
-                if( $this->music_cat_existed($title) ){
+                if ($this->music_cat_existed($title)) {
                     $data = "分类名称已存在";
                     $this->error_response(500, $data);
-                }else{
+                } else {
                     $data = $this->music_cat_new($title);
                     $this->success_response($data);
                 }
@@ -237,174 +237,282 @@ class hermit{
                 $data = "不存在的请求.";
                 $this->error_response(400, $data);
         }
-	}
+    }
 
-	/**
-	 * 添加写文章所需要的js和css
-	 */
-	function page_init(){
-		global $pagenow;
+    /**
+     * 添加写文章所需要的js和css
+     */
+    function page_init()
+    {
+        global $pagenow;
 
-		if( $pagenow == "post-new.php" || $pagenow == "post.php" ){
-			wp_enqueue_style('hermit-post', HERMIT_URL . '/assets/css/hermit.post-' . HERMIT_VERSION . '.css');
-			wp_enqueue_script('handlebars', HERMIT_URL . '/assets/js/handlebars.js', false, HERMIT_VERSION, false);
-			wp_enqueue_script('hermit-post', HERMIT_URL . '/assets/js/hermit.post-' . HERMIT_VERSION . '.js', false, HERMIT_VERSION, false);
+        $allowed_roles = $this->settings('roles');
+        $user = wp_get_current_user();
 
-			wp_localize_script( 'hermit-post', 'hermit', 
-				array(
-					"ajax_url" =>  admin_url() . "admin-ajax.php"
-			));
-		}
+        if( array_intersect($allowed_roles, $user->roles) ){
+            add_action('media_buttons_context', array($this, 'custom_button'));
 
-		if( $pagenow == "admin.php" && $_GET['page'] == 'hermit' ){
-            wp_enqueue_style('hermit-library', HERMIT_URL . '/assets/css/hermit-library.css');
-            wp_enqueue_script('hermit-library', HERMIT_URL . '/assets/js/hermit-library.js', false, HERMIT_VERSION, false);
+            if ($pagenow == "post-new.php" || $pagenow == "post.php") {
+                $this->_css('hermit-post');
+                $this->_libjs('handlebars');
+                $this->_js('hermit-post');
 
-            wp_localize_script( 'hermit-library', 'hermit',
-                array(
+                $prePage = $this->settings('prePage');
+                $count = $this->music_count();
+                $maxPage = ceil($count / $prePage);
+
+                wp_localize_script('hermit-post', 'hermit', array(
                     "ajax_url" => admin_url() . "admin-ajax.php",
-                    "tmpl_url" => HERMIT_URL . '/assets/tmpl/'
+                    "max_page" => $maxPage
                 ));
+            }
+
+            if ($pagenow == "admin.php" && $_GET['page'] == 'hermit') {
+                //上传音乐支持
+                wp_enqueue_media();
+                $this->_css('hermit-library');
+                $this->_libjs('watch,handlebars,jquery.mxloader,jquery.mxpage,jquery.mxlayer');
+                $this->_js('hermit-library');
+            }
         }
-	}
-	
-	/**
-	 * 显示后台菜单
-	 */
-	public function menu() {
-		add_menu_page('Hermit 播放器', 'Hermit 播放器', 'manage_options', 'hermit', array($this, 'library'), HERMIT_URL . '/assets/images/page-icon.png');
-		add_submenu_page('hermit', '音乐库', '音乐库', 'manage_options', 'hermit', array($this, 'library'));
-		add_submenu_page('hermit', '设置', '设置', 'manage_options', 'hermit-setting', array($this, 'setting'));
-        add_submenu_page('hermit', '说明', '说明', 'manage_options', 'hermit-help', array($this, 'help'));
+    }
 
-		add_action( 'admin_init', array($this, 'hermit_setting') );
-	}
+    /**
+     * 显示后台菜单
+     */
+    public function menu()
+    {
+        add_menu_page('Hermit 播放器', 'Hermit 播放器', 'manage_options', 'hermit', array($this, 'library'), HERMIT_URL . '/assets/images/logo.png');
+        add_submenu_page('hermit', '音乐库', '音乐库', 'manage_options', 'hermit', array($this, 'library'));
+        add_submenu_page('hermit', '设置', '设置', 'manage_options', 'hermit-setting', array($this, 'setting'));
+        add_submenu_page('hermit', '帮助', '帮助', 'manage_options', 'hermit-help', array($this, 'help'));
 
-	/**
-	 * 音乐库 library
-	 */
-	public function library(){
-		@require_once('include/library.php');
-	}
+        add_action('admin_init', array($this, 'hermit_setting'));
+    }
 
-	/**
-	* 设置
-	*/
-	public function setting(){
-		@require_once('include/setting.php');
-	}
+    /**
+     * 音乐库 library
+     */
+    public function library()
+    {
+        @require_once('include/library.php');
+    }
 
-	/**
-	* 注册设置数组
-	*/
-	public function hermit_setting(){
-		register_setting('hermit_setting_group', 'hermit_setting');
-	}	
-	
-	/**
-	* 帮助
-	*/
-	public function help(){
-		@require_once('include/help.php');
-	}
-	
-	/**
-	 * 添加<音乐库>按钮
-	 */	
-	public function plugin_action_link($actions, $plugin_file, $plugin_data){
-		if(strpos($plugin_file, 'hermit')!==false && is_plugin_active($plugin_file)){
-			$myactions = array('option'=>'<a href="'.HERMIT_ADMIN_URL.'admin.php?page=hermit">音乐库</a>');
-			$actions = array_merge($myactions,$actions);
-		}
-		return $actions;
-	}
+    /**
+     * 设置
+     */
+    public function setting()
+    {
+        @require_once('include/setting.php');
+    }
 
-	/**
-	 * Handlebars 模板
-	 */	
-	public function music_footer(){
-		global $pagenow;
-	    if( $pagenow == "post-new.php" || $pagenow == "post.php" ){
-			@require_once('include/template.php');
-		}
-	}
+    /**
+     * 注册设置数组
+     */
+    public function hermit_setting()
+    {
+        register_setting('hermit_setting_group', 'hermit_setting');
+    }
 
-	private function music_remote($ids){
-		global $wpdb, $hermit_table_name;
+    /**
+     * 帮助
+     */
+    public function help()
+    {
+        @require_once('include/help.php');
+    }
 
-		$result = array();
-		$data = $wpdb->get_results("SELECT id,song_name,song_author,song_url FROM {$hermit_table_name} WHERE id in ({$ids})");
+    /**
+     * 添加<音乐库>按钮
+     */
+    public function plugin_action_link($actions, $plugin_file, $plugin_data)
+    {
+        if (strpos($plugin_file, 'hermit') !== FALSE && is_plugin_active($plugin_file)) {
+            $myactions = array('option' => '<a href="' . HERMIT_ADMIN_URL . 'admin.php?page=hermit">音乐库</a>');
+            $actions = array_merge($myactions, $actions);
+        }
+        return $actions;
+    }
 
-		foreach ($data as $key => $value) {
-			$result['songs'][] = array(
-			    "song_id" => $value->id,
-			    "song_title" => $value->song_name,
-				"song_author" => $value->song_author,
-				"song_src" => $value->song_url
-			);
-		}
-		
-		return $result;
-	}
+    /**
+     * Handlebars 模板
+     */
+    public function music_footer()
+    {
+        global $pagenow;
+        if ($pagenow == "post-new.php" || $pagenow == "post.php") {
+            @require_once('include/template.php');
+        }
+    }
+
+    /**
+     * setting - 插件设置
+     *
+     * @param $key
+     * @return bool
+     */
+    public function settings($key)
+    {
+        $value = NULL;
+
+        switch ($key) {
+            case 'tips':
+                if ($this->config['tips'] && !empty($this->config['tips'])) {
+                    $value = $this->config['tips'];
+                } else {
+                    $value = '点击播放或暂停';
+                }
+
+                break;
+
+            case 'strategy':
+                $value = $this->config['strategy'];
+
+                if ($value == NULL) {
+                    $value = 1;
+                }
+
+                break;
+
+            case 'color':
+                $value = $this->config['color'];
+
+                if ($value == NULL) {
+                    $value = 'default';
+                }
+
+                break;
+
+            case 'jsplace':
+                $value = $this->config['jsplace'];
+
+                if ($value == NULL) {
+                    $value = 0;
+                }
+
+                break;
+
+            case 'prePage':
+                $value = $this->config['prePage'];
+
+                if ($value == NULL || $value < 1) {
+                    $value = 20;
+                }
+
+                break;
+
+            case 'remainTime':
+                $value = $this->config['remainTime'];
+
+                if ($value == NULL) {
+                    $value = 10;
+                }
+
+                break;
+
+            case 'roles':
+                $value = $this->config['roles'];
+
+                if ($value == NULL) {
+                    $value = array('administrator');
+                }
+
+                break;
+
+            case 'debug':
+                $value = $this->config['debug'];
+
+                if ($value == NULL) {
+                    $value = 0;
+                }
+
+                break;
+        }
+
+        return $value;
+    }
+
+    private function music_remote($ids)
+    {
+        global $wpdb, $hermit_table_name;
+
+        $result = array();
+        $data = $wpdb->get_results("SELECT id,song_name,song_author,song_url FROM {$hermit_table_name} WHERE id in ({$ids})");
+
+        foreach ($data as $key => $value) {
+            $result['songs'][] = array(
+                "song_id" => $value->id,
+                "song_title" => $value->song_name,
+                "song_author" => $value->song_author,
+                "song_src" => $value->song_url
+            );
+        }
+
+        return $result;
+    }
 
     /**
      * 新增本地音乐
      */
-	private function music_new(){
-		global $wpdb, $hermit_table_name;
+    private function music_new()
+    {
+        global $wpdb, $hermit_table_name;
 
-		$song_name = stripslashes($this->post('song_name'));
-		$song_author = stripslashes($this->post('song_author'));
-		$song_url = esc_attr(esc_html($this->post('song_url')));
+        $song_name = stripslashes($this->post('song_name'));
+        $song_author = stripslashes($this->post('song_author'));
+        $song_url = esc_attr(esc_html($this->post('song_url')));
         $song_cat = $this->post('song_cat');
-		$created = date('Y-m-d H:i:s');
+        $created = date('Y-m-d H:i:s');
 
-		$wpdb->insert($hermit_table_name, compact('song_name', 'song_author', 'song_url', 'song_cat', 'created'), array('%s', '%s', '%s', '%d', '%s'));
+        $wpdb->insert($hermit_table_name, compact('song_name', 'song_author', 'song_url', 'song_cat', 'created'), array('%s', '%s', '%s', '%d', '%s'));
         $id = $wpdb->insert_id;
 
         $song_cat_name = $this->music_cat($song_cat);
         return compact('id', 'song_name', 'song_author', 'song_cat', 'song_cat_name', 'song_url');
-	}
+    }
 
     /**
      * 升级本地音乐信息
      */
-	private function music_update(){
-		global $wpdb, $hermit_table_name;
+    private function music_update()
+    {
+        global $wpdb, $hermit_table_name;
 
-		$id = $this->post('id');
-		$song_name = stripslashes($this->post('song_name'));
-		$song_author = stripslashes($this->post('song_author'));
+        $id = $this->post('id');
+        $song_name = stripslashes($this->post('song_name'));
+        $song_author = stripslashes($this->post('song_author'));
         $song_url = esc_attr(esc_html($this->post('song_url')));
         $song_cat = $this->post('song_cat');
 
-		$wpdb->update( 
-			$hermit_table_name, 
-			compact('song_name', 'song_author', 'song_cat', 'song_url'),
-			array( 'id' => $id ), 
-			array( '%s', '%s', '%d', '%s'),
-			array( '%d' ) 
-		);
+        $wpdb->update(
+            $hermit_table_name,
+            compact('song_name', 'song_author', 'song_cat', 'song_url'),
+            array('id' => $id),
+            array('%s', '%s', '%d', '%s'),
+            array('%d')
+        );
 
         $song_cat_name = $this->music_cat($song_cat);
         return compact('id', 'song_name', 'song_author', 'song_cat', 'song_cat_name', 'song_url');
-	}
+    }
 
     /**
      * 删除本地音乐
      */
-	private function music_delete(){
-		global $wpdb, $hermit_table_name;
+    private function music_delete()
+    {
+        global $wpdb, $hermit_table_name;
 
-		$ids = $this->post('ids');
+        $ids = $this->post('ids');
 
         $wpdb->query("DELETE FROM {$hermit_table_name} WHERE id IN ({$ids})");
-	}
+    }
 
     /**
      * 移动分类
      */
-    private function music_cat_move(){
+    private function music_cat_move()
+    {
         global $wpdb, $hermit_table_name;
 
         $ids = $this->post('ids');
@@ -416,56 +524,44 @@ class hermit{
     /**
      * 本地音乐列表
      *
-     * @param $paged
+     * @param      $paged
      * @param null $catid
      * @return mixed
      */
-	private function music_list($paged, $catid=null){
-		global $wpdb, $hermit_table_name;
+    private function music_list($paged, $catid = NULL)
+    {
+        global $wpdb, $hermit_table_name;
 
-		$limit = 20;
-		$offset = ($paged -1)*$limit;
+        $limit = $this->settings('prePage');
+        $offset = ($paged - 1) * $limit;
 
-        if( $catid ){
+        if ($catid) {
             $query_str = "SELECT id,song_name,song_author,song_cat,song_url,created FROM {$hermit_table_name} WHERE `song_cat` = '{$catid}' ORDER BY `created` DESC LIMIT {$limit} OFFSET {$offset}";
-        }else{
+        } else {
             $query_str = "SELECT id,song_name,song_author,song_cat,song_url,created FROM {$hermit_table_name} ORDER BY `created` DESC LIMIT {$limit} OFFSET {$offset}";
         }
 
-		$result = $wpdb->get_results($query_str);
+        $result = $wpdb->get_results($query_str);
 
-        if( !empty($result) ){
-            foreach($result as $key => $val){
-                $result[$key]->song_cat_name = $this->music_cat($val->song_cat);
-            }
-        }
-
-		return $result;
-	}
+        return $result;
+    }
 
     /**
      * 本地音乐分类列表
      *
      * @return mixed
      */
-    private function  music_cat_list(){
+    private function  music_catList()
+    {
         global $wpdb, $hermit_cat_name;
 
         $query_str = "SELECT id,title FROM {$hermit_cat_name}";
         $result = $wpdb->get_results($query_str);
 
-        if( !empty($result) ){
-            foreach($result as $key => $val){
-                $result[$key]->url = '/cat/'.$val->id;
+        if (!empty($result)) {
+            foreach ($result as $key => $val) {
                 $result[$key]->count = intval($this->music_count($val->id));
             }
-
-            array_unshift($result, array(
-                "id" => '',
-                "title" => "全部音乐",
-                "url" => "/",
-                "count" => intval($this->music_count())
-            ));
         }
 
         return $result;
@@ -477,7 +573,8 @@ class hermit{
      * @param $cat_id
      * @return mixed
      */
-    private function music_cat($cat_id){
+    private function music_cat($cat_id)
+    {
         global $wpdb, $hermit_cat_name;
 
         $cat_name = $wpdb->get_var("SELECT title FROM {$hermit_cat_name} WHERE id = '{$cat_id}'");
@@ -490,7 +587,8 @@ class hermit{
      * @param $title
      * @return mixed
      */
-    private function music_cat_existed($title){
+    private function music_cat_existed($title)
+    {
         global $wpdb, $hermit_cat_name;
 
         $id = $wpdb->get_var("SELECT id FROM {$hermit_cat_name} WHERE title = '{$title}'");
@@ -500,7 +598,8 @@ class hermit{
     /**
      * 新建分类
      */
-    private function music_cat_new($title){
+    private function music_cat_new($title)
+    {
         global $wpdb, $hermit_cat_name;
 
         $title = stripslashes($title);
@@ -512,7 +611,6 @@ class hermit{
         return array(
             'id' => $new_cat_id,
             'title' => $title,
-            'url' => '/cat/'.$new_cat_id,
             'count' => intval($this->music_count($new_cat_id))
         );
     }
@@ -524,12 +622,13 @@ class hermit{
      * @param null $catid
      * @return mixed
      */
-    private function music_count($catid=null){
+    private function music_count($catid = NULL)
+    {
         global $wpdb, $hermit_table_name;
 
-        if( $catid ){
+        if ($catid) {
             $query_str = "SELECT COUNT(id) AS count FROM {$hermit_table_name} WHERE song_cat = '{$catid}'";
-        }else{
+        } else {
             $query_str = "SELECT COUNT(id) AS count FROM {$hermit_table_name}";
         }
 
@@ -537,22 +636,55 @@ class hermit{
         return $music_count;
     }
 
-	private function post($key){
-		$key = $_POST[$key];
-		return $key;
-	}
+    private function _css($css_str)
+    {
+        $css_arr = explode(',', $css_str);
 
-	private function get($key){
-		$key = esc_attr(esc_html($_GET[$key]));
-		return $key;
-	}
+        foreach ($css_arr as $key => $val) {
+            $css_path = sprintf('%s/assets/css/%s/%s.css', HERMIT_URL, HERMIT_VERSION, $val);
+            wp_enqueue_style($val, $css_path);
+        }
+    }
 
-    private function error_response($code, $error_message){
-        if( $code == 404 ){
+    private function _libjs($js_str, $js_place = FALSE)
+    {
+        $js_arr = explode(',', $js_str);
+
+        foreach ($js_arr as $key => $val) {
+            $js_path = sprintf('%s/assets/js/lib/%s.js', HERMIT_URL, $val);
+            wp_enqueue_script($val, $js_path, FALSE, HERMIT_VERSION, $js_place);
+        }
+    }
+
+    private function _js($js_str, $js_place = FALSE)
+    {
+        $js_arr = explode(',', $js_str);
+
+        foreach ($js_arr as $key => $val) {
+            $js_path = sprintf('%s/assets/js/%s/%s.js', HERMIT_URL, HERMIT_VERSION, $val);
+            wp_enqueue_script($val, $js_path, FALSE, HERMIT_VERSION, $js_place);
+        }
+    }
+
+    private function post($key)
+    {
+        $key = $_POST[$key];
+        return $key;
+    }
+
+    private function get($key)
+    {
+        $key = esc_attr(esc_html($_GET[$key]));
+        return $key;
+    }
+
+    private function error_response($code, $error_message)
+    {
+        if ($code == 404) {
             header('HTTP/1.1 404 Not Found');
-        }else if( $code == 301 ){
+        } else if ($code == 301) {
             header('HTTP/1.1 301 Moved Permanently');
-        }else{
+        } else {
             header('HTTP/1.0 500 Internal Server Error');
         }
         header('Content-Type: text/plain;charset=UTF-8');
@@ -560,7 +692,8 @@ class hermit{
         exit;
     }
 
-    private function success_response($result){
+    private function success_response($result)
+    {
         header('HTTP/1.1 200 OK');
         header('Content-type: application/json;charset=UTF-8');
         echo json_encode($result);

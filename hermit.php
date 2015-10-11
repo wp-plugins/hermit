@@ -3,14 +3,14 @@
 Plugin Name: Hermit
 Plugin URI: http://mufeng.me/hermit-for-wordpress.html
 Description: 音乐播放器 Hermit for wordpress music player
-Version: 2.0.2
+Version: 2.1.5
 Author: Mufeng
 Author URI: http://mufeng.me
 */
 
-define('HERMIT_VERSION', '2.0.2');
+define('HERMIT_VERSION', '2.1.5');
 define('HERMIT_URL', plugins_url('', __FILE__));
-define('HERMIT_PATH', dirname( __FILE__ ));
+define('HERMIT_PATH', dirname(__FILE__));
 define('HERMIT_ADMIN_URL', admin_url());
 
 global $HMT, $HMTJSON;
@@ -18,11 +18,11 @@ global $HMT, $HMTJSON;
 require HERMIT_PATH . '/class.json.php';
 require HERMIT_PATH . '/class.hermit.php';
 
-if(!isset($HMT)){
+if (!isset($HMT)) {
 	$HMT = new hermit();
 }
 
-if(!isset($HMTJSON)){
+if (!isset($HMTJSON)) {
 	$HMTJSON = new HermitJson();
 }
 
@@ -31,7 +31,7 @@ if(!isset($HMTJSON)){
  */
 global $wpdb, $hermit_table_name, $hermit_cat_name;
 $hermit_table_name = $wpdb->prefix . 'hermit';
-$hermit_cat_name = $wpdb->prefix . 'hermit_cat';
+$hermit_cat_name   = $wpdb->prefix . 'hermit_cat';
 
 /**
  * 加载类

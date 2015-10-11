@@ -1,5 +1,7 @@
 <?php
-class HermitJson{
+
+class HermitJson
+{
 	const API_URL_PREFIX = "http://m.xiami.com/web/get-songs?type=0&rtype=";
 	const SONG_URL = "song&id=";
 	const ALBUM_URL = "album&id=";
@@ -12,135 +14,137 @@ class HermitJson{
 
 	private $token;
 
-	public function __construct(){
-		$this->get_token();
+	public function __construct()
+	{
 	}
 
-	public function song($song_id){
-		$key = self::SONG_KEY_PREFIX . $song_id;
-		$url = self::API_URL_PREFIX . self::SONG_URL . $song_id . self::TOKEN_KEY . $this->token;
+	public function song($song_id)
+	{
+		$key = "xiami/song/" . $song_id;
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$response = $this->http($url);
+		$response = $this->xiami_http(0, $song_id);
 
-		if(  $response && $response['status'] == "ok" ){
-		    $result = array(
-			    "song_id" => $response["data"][0]["id"],
-			    "song_title" => $response["data"][0]["title"],
-				"song_author" => $response["data"][0]["author"],
-				"song_src" => $response["data"][0]["src"]
+		if ($response && $response["state"] == 0 && $response['data']) {
+			$result = $response["data"]["song"];
+
+			$song = array(
+				"song_id"     => $result["song_id"],
+				"song_title"  => $result["song_name"],
+				"song_author" => $result["singers"],
+				"song_src"    => $result["listen_file"],
+				"song_cover"  => $result['logo']
 			);
 
-		    $this->set_cache($key, $result);
+			$this->set_cache($key, $song);
 
-		    return $result;
+			return $song;
 		}
 
 		return false;
 	}
 
-	public function song_list($song_list){
-		if( !$song_list ) return false;
+	public function song_list($song_list)
+	{
+		if (!$song_list) return false;
+
+		$this->get_token();
 
 		$songs_array = explode(",", $song_list);
 		$songs_array = array_unique($songs_array);
 
-		if( !empty($songs_array) ){
+		if (!empty($songs_array)) {
 			$result = array();
-			foreach( $songs_array as $song_id ){
-				$result['songs'][]  = $this->song($song_id);
+			foreach ($songs_array as $song_id) {
+				$result['songs'][] = $this->song($song_id);
 			}
 			//$this->set_cache($key, $result);
 			return $result;
 		}
 
-	    return false;
+		return false;
 	}
 
-	public function album($album_id){
-		$key = self::ALBUM_KEY_PREFIX . $album_id;
-		$url = self::API_URL_PREFIX . self::ALBUM_URL . $album_id . self::TOKEN_KEY . $this->token;
+	public function album($album_id)
+	{
+		$key = 'xiami/album/' . $album_id;
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$response = $this->http($url); 
+		$this->get_token();
+		$response = $this->xiami_http(1, $album_id);
 
-		if(  $response["status"]=="ok" && $response["data"] ){
+		if ($response && $response["state"] == 0 && $response["data"]) {
 			$result = $response["data"];
-			$count = count($result);
+			$count  = $result['song_count'];
 
-			if( $count < 1 ) return false;
+			if ($count < 1) return false;
 
 			$album = array(
-				"album_id" => $album_id,
-				"album_title" => "",
-				"album_author" => "",
-				"album_type" => "albums",
-				"album_count" => $count
+				"album_id"     => $album_id,
+				"album_title"  => $result['album_name'],
+				"album_author" => $result['artist_name'],
+				"album_cover"  => $result['album_logo'],
+				"album_count"  => $count,
+				"album_type"   => "albums",
 			);
 
-			foreach($result as $key => $value){
-
-				$album["songs"][] = array(
-					"song_id" => $value["id"],
-					"song_title" => $value["title"],
-					"song_length" => "",
-					"song_src" => $value["src"],
-					"song_author" => $value["author"]
-				);
-				$album["album_author"] = $value["author"];
+			foreach ($result['songs'] as $key => $val) {
+				$song_id = $val['song_id'];
+				$album["songs"][] = $this->song($song_id);
 			}
 
 			$this->set_cache($key, $album);
 			return $album;
 		}
 
-		return false;	
+		return false;
 	}
 
-	public function collect($collect_id){
-		$key = self::COLLECT_KEY_PREFIX . $collect_id;
-		$url = self::API_URL_PREFIX . self::COLLECT_URL . $collect_id . self::TOKEN_KEY . $this->token;
+	public function collect($collect_id)
+	{
+		$key = 'xiami/collect/' . $collect_id;
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$response = $this->http($url); 
+		$this->get_token();
+		$response = $this->xiami_http(2, $collect_id);
 
-		if(  $response["status"]=="ok" && $response["data"] ){
+		if ($response && $response["state"] == 0 && $response["data"]) {
 			$result = $response["data"];
-			$count = count($result);
+			$count  = $result['songs_count'];
 
-			if(  $count < 1 ) return false;
+			if ($count < 1) return false;
 
 			$collect = array(
-				"collect_id" => $collect_id,
-				"collect_title" => '',
-				"collect_author" => '',
-				"collect_type" => "collects",
-				"collect_count" => $count
+				"collect_id"     => $collect_id,
+				"collect_title"  => $result['collect_name'],
+				"collect_author" => $result['user_name'],
+				"collect_cover"  => $result['logo'],
+				"collect_type"   => "collects",
+				"collect_count"  => $count
 			);
 
-			foreach($result as $key => $value){
-
+			foreach ($result['songs'] as $key => $value) {
 				$collect["songs"][] = array(
-					"song_id" => $value["id"],
-					"song_title" => $value["title"],
-					"song_length" => 0,
-					"song_src" => $value["src"],
-					"song_author" => $value["author"]
+					"song_id"     => $value["song_id"],
+					"song_title"  => $value["song_name"],
+					"song_length" => $value["length"],
+					"song_src"    => $value["listen_file"],
+					"song_author" => $value["singers"],
+					"song_cover"  => $value['album_logo']
 				);
-
-				$collect["collect_author"] = $value["author"];
 			}
 			$this->set_cache($key, $collect);
+
 			return $collect;
 		}
 
-		return false;		
+		return false;
 	}
 
 	public function netease_song($music_id)
@@ -148,93 +152,97 @@ class HermitJson{
 		$key = "/netease/song/$music_id";
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$url = "http://music.163.com/api/song/detail/?id=" . $music_id . "&ids=%5B" . $music_id . "%5D";
-    	$response = $this->netease_http($url);
+		$response = $this->netease_http(2, $music_id);
 
-		if( $response["code"]==200 && $response["songs"] ){
+		if ($response["code"] == 200 && $response["songs"]) {
 			//处理音乐信息
-			$mp3_url = $response["songs"][0]["mp3Url"];
-			$mp3_url = str_replace("http://m", "http://p", $mp3_url);
+			$mp3_url    = $response["songs"][0]["mp3Url"];
+			$mp3_url    = str_replace("http://m", "http://p", $mp3_url);
 			$music_name = $response["songs"][0]["name"];
-			$artists = array();
+			$cover      = $response["songs"][0]['album']['picUrl'];
+			$duration   = $response["songs"][0]['duration'];
+			$artists    = array();
 
 			foreach ($response["songs"][0]["artists"] as $artist) {
-			    $artists[] = $artist["name"];
+				$artists[] = $artist["name"];
 			}
 
 			$artists = implode(",", $artists);
 
-		    $result = array(
-			    "song_id" => $music_id,
-			    "song_title" => $music_name,
+			$result = array(
+				"song_id"     => $music_id,
+				"song_title"  => $music_name,
+				"song_length" => ceil($duration/1000),
 				"song_author" => $artists,
-				"song_src" => $mp3_url
+				"song_src"    => $mp3_url,
+				"song_cover"  => $cover
 			);
 
-		    $this->set_cache($key, $result, 24);
+			$this->set_cache($key, $result, 24);
 
-		    return $result;
+			return $result;
 		}
 
-		return false;	
+		return false;
 	}
 
 	public function netease_songs($song_list)
 	{
-		if( !$song_list ) return false;
+		if (!$song_list) return false;
 
 		$songs_array = explode(",", $song_list);
 		$songs_array = array_unique($songs_array);
 
-		if( !empty($songs_array) ){
+		if (!empty($songs_array)) {
 			$result = array();
-			foreach( $songs_array as $song_id ){
-				$result['songs'][]  = $this->netease_song($song_id);
+			foreach ($songs_array as $song_id) {
+				$result['songs'][] = $this->netease_song($song_id);
 			}
 			return $result;
 		}
 
-	    return false;
-	}    
+		return false;
+	}
 
 	public function netease_album($album_id)
 	{
 		$key = "/netease/album/$album_id";
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$url = "http://music.163.com/api/album/" . $album_id;
-    	$response = $this->netease_http($url);
+		$response = $this->netease_http(1, $album_id);
 
-		if( $response["code"]==200 && $response["album"] ){
+		if ($response["code"] == 200 && $response["album"]) {
 			//处理音乐信息
 			$result = $response["album"]["songs"];
-			$count = count($result);
+			$count  = count($result);
 
-			if( $count < 1 ) return false;
+			if ($count < 1) return false;
 
-			$album_name = $response["album"]["name"];
+			$album_name   = $response["album"]["name"];
 			$album_author = $response["album"]["artist"]["name"];
+			$cover        = $response["album"]['picUrl'];
 
 			$album = array(
-				"album_id" => $album_id,
-				"album_title" => $album_name,
+				"album_id"     => $album_id,
+				"album_title"  => $album_name,
 				"album_author" => $album_author,
-				"album_type" => "albums",
-				"album_count" => $count
+				"album_type"   => "albums",
+				"album_count"  => $count
 			);
 
-			foreach($result as $k => $value){
-				$mp3_url = str_replace("http://m", "http://p", $value["mp3Url"]);
+			foreach ($result as $k => $value) {
+				$mp3_url          = str_replace("http://m", "http://p", $value["mp3Url"]);
 				$album["songs"][] = array(
-					"song_id" => $value["id"],
-					"song_title" => $value["name"],
-					"song_length" => "",
-					"song_src" => $mp3_url,
-					"song_author" => $album_author
+					"song_id"     => $value["id"],
+					"song_title"  => $value["name"],
+					"song_length" => ceil($value['duration']/1000),
+					"song_src"    => $mp3_url,
+					"song_author" => $album_author,
+					"song_cover"  => $cover
 				);
 			}
 
@@ -250,44 +258,43 @@ class HermitJson{
 		$key = "/netease/playlist/$playlist_id";
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$url = "http://music.163.com/api/playlist/detail?id=" . $playlist_id;
-    	$response = $this->netease_http($url);
+		$response = $this->netease_http(0, $playlist_id);
 
-		if( $response["code"]==200 && $response["result"] ){
+		if ($response["code"] == 200 && $response["result"]) {
 			//处理音乐信息
 			$result = $response["result"]["tracks"];
-			$count = count($result);
+			$count  = count($result);
 
-			if( $count < 1 ) return false;
+			if ($count < 1) return false;
 
-			$collect_name = $response["result"]["name"];
-			$collect_author = $response["result"]["creator"]["nickname"];
+			$collect_name   = $response["result"]["name"];
 
 			$collect = array(
-				"collect_id" => $collect_id,
-				"collect_title" => $collect_name,
-				"collect_author" => $collect_author,
-				"collect_type" => "collects",
-				"collect_count" => $count
+				"collect_id"     => $playlist_id,
+				"collect_title"  => $collect_name,
+				"collect_author" => '',
+				"collect_type"   => "collects",
+				"collect_count"  => $count
 			);
 
-			foreach($result as $k => $value){
+			foreach ($result as $k => $value) {
 				$mp3_url = str_replace("http://m", "http://p", $value["mp3Url"]);
 				$artists = array();
 				foreach ($value["artists"] as $artist) {
-				    $artists[] = $artist["name"];
+					$artists[] = $artist["name"];
 				}
 
 				$artists = implode(",", $artists);
 
 				$collect["songs"][] = array(
-					"song_id" => $value["id"],
-					"song_title" => $value["name"],
-					"song_length" => "",
-					"song_src" => $mp3_url,
-					"song_author" => $artists
+					"song_id"     => $value["id"],
+					"song_title"  => $value["name"],
+					"song_length" => ceil($value['duration']/1000),
+					"song_src"    => $mp3_url,
+					"song_author" => $artists,
+					"song_cover"  => $value['album']['picUrl']
 				);
 			}
 
@@ -303,32 +310,33 @@ class HermitJson{
 		$key = "/netease/radios/$radio_id";
 
 		$cache = $this->get_cache($key);
-		if( $cache ) return $cache;
+		if ($cache) return $cache;
 
-		$response = $this->netease_radio_http($radio_id);
+		$response = $this->netease_http(4, $radio_id);
 
-		if( $response["code"]==200 && $response["programs"] ){
+		if ($response["code"] == 200 && $response["programs"]) {
 			//处理音乐信息
 			$result = $response["programs"];
-			$count = count($result);
+			$count  = count($result);
 
-			if( $count < 1 ) return false;
+			if ($count < 1) return false;
 
 			$collect = array(
-				"collect_id" => $radio_id,
-				"collect_title" => '',
+				"collect_id"     => $radio_id,
+				"collect_title"  => '',
 				"collect_author" => '',
-				"collect_type" => "radios",
-				"collect_count" => $count
+				"collect_type"   => "radios",
+				"collect_count"  => $count
 			);
 
-			foreach($result as $k => $val){
+			foreach ($result as $k => $val) {
 				$collect["songs"][] = array(
-					"song_id" => $val['mainSong']['id'],
-					"song_title" => $val['mainSong']['name'],
-					"song_length" => "",
-					"song_src" => $val['mainSong']['mp3Url'],
-					"song_author" => $val['radio']['name']
+					"song_id"     => $val['mainSong']['id'],
+					"song_title"  => $val['mainSong']['name'],
+					"song_length" => $val['mainSong']['duration'],
+					"song_src"    => $val['mainSong']['mp3Url'],
+					"song_author" => $val['radio']['name'],
+					"song_cover"  => $val['mainSong']['album']['picUrl']
 				);
 			}
 
@@ -339,7 +347,7 @@ class HermitJson{
 		return false;
 	}
 
-	private function netease_radio_http($radio_id)
+	private function netease_http($type, $id)
 	{
 		$header = array(
 			"Accept:*/*",
@@ -347,121 +355,138 @@ class HermitJson{
 			"Cache-Control:no-cache",
 			"Connection:keep-alive",
 			"Content-Type:application/x-www-form-urlencoded;charset=UTF-8",
-			"Cookie:appver=2.9.1;",
+			"Cookie:visited=true;",
 			"DNT:1",
 			"Host:music.163.com",
 			"Pragma:no-cache",
-			"Referer:http://music.163.com/outchain/player?type=4&id={$radio_id}&auto=1&height=430&bg=e8e8e8",
+			"Referer:http://music.163.com/outchain/player?type={$type}&id={$id}&auto=1&height=430&bg=e8e8e8",
 			"User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.155 Safari/537.36"
 		);
 
-		$ch = curl_init("http://music.163.com/api/dj/program/byradio?radioId={$radio_id}&id={$radio_id}&ids=%5B%22{$radio_id}%22%5D&limit=100&offset=0");
+		switch($type){
+			//歌单
+			case 0:
+				$url = "http://music.163.com/api/playlist/detail?id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				break;
+
+			//专辑
+			case 1:
+				$url = "http://music.163.com/api/album/{$id}?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				break;
+
+			//单曲
+			case 2:
+				$url = "http://music.163.com/api/song/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				break;
+
+			//单播客
+			case 3:
+				$url = "http://music.163.com/api/dj/program/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				break;
+
+			//播客全集
+			case 4:
+				$url = "http://music.163.com/api/dj/program/byradio?radioId={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				break;
+		}
+
+		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$cexecute = curl_exec($ch);
 		@curl_close($ch);
 
 		if ($cexecute) {
-			$result = json_decode($cexecute, true);
+			$result = json_decode($cexecute, TRUE);
 			return $result;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	private function netease_http($url)
+	private function xiami_http($type, $id)
 	{
-	    $refer = "http://music.163.com/";
-	    $header[] = "Cookie: " . "appver=2.0.2;";
-	    $ch = curl_init();
-	    curl_setopt($ch, CURLOPT_URL, $url);
-	    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	    curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-	    curl_setopt($ch, CURLOPT_REFERER, $refer);
-	    $cexecute = curl_exec($ch);
-	    curl_close($ch);
 
-		if ($cexecute) {
-			$result = json_decode($cexecute, true);
-			return $result;
-		}else{
-			return false;
-		}
-	}
+		switch($type){
+			case 0:
+				$url = "http://api.xiami.com/web?v=2.0&app_key=1&id={$id}&r=song/detail";
+				break;
 
-	private function http($url, $json=true){
-		if( !$url ){
-			return false;
+			case 1:
+				$url = "http://api.xiami.com/web?v=2.0&app_key=1&id={$id}&r=album/detail";
+				break;
+
+			case 2:
+				$url = "http://api.xiami.com/web?v=2.0&app_key=1&id={$id}&type=collectId&r=collect/detail";
+				break;
 		}
 
-        $header = array(
-            'Host: m.xiami.com',
-            'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53',
-            'Cookie: _xiamitoken='.$this->token.'; visit=1',
-            'Proxy-Connection:keep-alive',
-            'X-Requested-With:XMLHttpRequest',
-        	'X-FORWARDED-FOR:42.156.140.238', 
-			'CLIENT-IP:42.156.140.238'
-        );
-
-		$ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_REFERER, 'http://m.xiami.com/');
-        $cexecute = curl_exec($ch);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_REFERER, "http://m.xiami.com/");
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53');
+		curl_setopt($ch, CURLOPT_COOKIE, "user_from=2; _xiamitoken={$this->token}");
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$cexecute = curl_exec($ch);
 		@curl_close($ch);
 
 		if ($cexecute) {
-			if($json) $result = json_decode($cexecute, true);
+			$result = json_decode($cexecute, TRUE);
 			return $result;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	private function get_token(){
+	private function get_token()
+	{
 		$token = get_transient(self::XIAMI_TOKEN_KEY);
 
-		if( $token ){
+		if ($token) {
 			$this->token = $token;
-		}else{
+		} else {
 			$XM_head = wp_remote_head('http://m.xiami.com', array(
 				'headers' => array(
-				    'Host: m.xiami.com',
-				    'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53',
-				    'Proxy-Connection:keep-alive',
-				    'X-Requested-With:XMLHttpRequest',
-        			'X-FORWARDED-FOR:42.156.140.238', 
+					'Host: m.xiami.com',
+					'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.3 (KHTML, like Gecko) Version/8.0 Mobile/12A4345d Safari/600.1.4',
+					'Proxy-Connection:keep-alive',
+					'X-FORWARDED-FOR:42.156.140.238',
 					'CLIENT-IP:42.156.140.238'
 				)
 			));
 
-			if( !is_wp_error($XM_head) ){
+			if (!is_wp_error($XM_head)) {
 				$cookies = $XM_head['cookies'];
 
 				foreach ($cookies as $key => $cookie) {
-					if( $cookie->name == '_xiamitoken' ){
+					if ($cookie->name == '_xiamitoken') {
 						$this->token = $cookie->value;
 
-						set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60*60*100);
+						set_transient(self::XIAMI_TOKEN_KEY, $this->token, 60 * 60 * 100);
 					}
 				}
 			}
 		}
 	}
 
-	public function get_cache($key){
+	public function get_cache($key)
+	{
 		$cache = get_transient($key);
-		return $cache === false ? false : json_decode($cache, true);
+		return $cache === false ? false : json_decode($cache, TRUE);
 	}
 
-	public function set_cache($key, $value, $hour=1){
-		$value  = json_encode($value);
-		set_transient($key, $value, 60*60*$hour);
+	public function set_cache($key, $value, $hour = 1)
+	{
+		$value = json_encode($value);
+		set_transient($key, $value, 60 * 60 * $hour);
 	}
 
-	public function clear_cache($key){
+	public function clear_cache($key)
+	{
 		delete_transient($key);
 	}
 }
