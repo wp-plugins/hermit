@@ -73,7 +73,7 @@
 					foreach ($color_array as $key => $title) { ?>
 						<p>
 							<label title="<?php echo $title; ?>">
-								<input type="radio" name="hermit_setting[color]"
+								<input class="hermit-radio-<?php echo $key;?>" type="radio" name="hermit_setting[color]"
 									   value="<?php echo $key; ?>" <?php if ($this->settings('color') == $key) echo 'checked="checked"'; ?>/>
 								<span><?php echo $title; ?></span>
 							</label>
@@ -147,4 +147,5 @@
 			</tbody>
 		</table>
 	</form>
+	<style>input.hermit-radio-default[type=radio]{border-color:#5895be}input.hermit-radio-default[type=radio]:checked:before{background-color:#5895be}input.hermit-radio-red[type=radio]{border-color:#dd4b39}input.hermit-radio-red[type=radio]:checked:before{background-color:#dd4b39}input.hermit-radio-blue[type=radio]{border-color:#5cb85c}input.hermit-radio-blue[type=radio]:checked:before{background-color:#5cb85c}input.hermit-radio-yellow[type=radio]{border-color:#f0ad4e}input.hermit-radio-yellow[type=radio]:checked:before{background-color:#f0ad4e}input.hermit-radio-pink[type=radio]{border-color:#f489ad}input.hermit-radio-pink[type=radio]:checked:before{background-color:#f489ad}input.hermit-radio-purple[type=radio]{border-color:orchid}input.hermit-radio-purple[type=radio]:checked:before{background-color:orchid}input.hermit-radio-black[type=radio]:checked:before{background-color:#aaa}</style>
 </div>
