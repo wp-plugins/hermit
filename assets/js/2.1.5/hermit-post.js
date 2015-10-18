@@ -175,7 +175,7 @@ jQuery(document).ready(function(b) {
             },
             success: function(c) {
                 h.data = h.data.concat(c.data);
-                b("#hermit-remote-content ul").append(r(h));
+                b("#hermit-remote-content ul").append(r(c));
                 l++;
                 b("#hermit-remote-button").text("\u52a0\u8f7d\u66f4\u591a  (" + l + "/" + hermit.max_page + ")");
                 k = !1

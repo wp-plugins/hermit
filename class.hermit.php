@@ -4,8 +4,6 @@ class hermit
 {
     public function __construct()
     {
-        $this->config = get_option('hermit_setting');
-
         /**
          ** 事件绑定
          **/
@@ -14,12 +12,9 @@ class hermit
         add_action('admin_init', array($this, 'page_init'));
         add_action('wp_enqueue_scripts', array($this, 'hermit_scripts'));
         add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
+        add_action('in_admin_footer', array($this, 'music_footer'));
         add_action('wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
         add_action('wp_ajax_hermit', array($this, 'hermit_callback'));
-
-        add_action('in_admin_footer', array($this, 'music_footer'));
-
-        add_action('wp_ajax_nopriv_hermit_source', array($this, 'hermit_source_callback'));
         add_action('wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
     }
 
@@ -75,9 +70,8 @@ class hermit
 
         $color = $this->settings('color');
         $exClass = sprintf('hermit hermit-%s hermit-unexpand-%s hermit-fullheight-%s', $color, $unexpand, $fullheight);
-        $cover = HERMIT_URL . "/assets/images/cover@3x.png";
 
-        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box hermit-clear"><div class="hermit-cover"><img class="hermit-cover-image" src="' . $cover . '" width="80" height="80" /><div class="hermit-button"></div></div><div class="hermit-info"><div class="hermit-title"><div class="hermit-detail"></div></div><div class="hermit-controller"><div class="hermit-author"></div><div class="hermit-additive"><div class="hermit-duration">00:00/00:00</div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
+        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-orderbutton"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
     }
 
     /**
@@ -250,9 +244,9 @@ class hermit
         $user = wp_get_current_user();
 
         if( array_intersect($allowed_roles, $user->roles) ){
-            add_action('media_buttons_context', array($this, 'custom_button'));
-
             if ($pagenow == "post-new.php" || $pagenow == "post.php") {
+                add_action('media_buttons_context', array($this, 'custom_button'));
+
                 $this->_css('hermit-post');
                 $this->_libjs('handlebars');
                 $this->_js('hermit-post');
@@ -353,83 +347,21 @@ class hermit
      */
     public function settings($key)
     {
-        $value = NULL;
+        $defaults = array(
+            'tips' => '点击播放或暂停',
+            'strategy' => 1,
+            'color' => 'default',
+            'jsplace' => 0,
+            'prePage' => 20,
+            'remainTime' => 10,
+            'roles' => array('administrator'),
+            'debug' => 0
+        );
 
-        switch ($key) {
-            case 'tips':
-                if ($this->config['tips'] && !empty($this->config['tips'])) {
-                    $value = $this->config['tips'];
-                } else {
-                    $value = '点击播放或暂停';
-                }
+        $settings = get_option('hermit_setting');
+        $settings = wp_parse_args( $settings, $defaults );
 
-                break;
-
-            case 'strategy':
-                $value = $this->config['strategy'];
-
-                if ($value == NULL) {
-                    $value = 1;
-                }
-
-                break;
-
-            case 'color':
-                $value = $this->config['color'];
-
-                if ($value == NULL) {
-                    $value = 'default';
-                }
-
-                break;
-
-            case 'jsplace':
-                $value = $this->config['jsplace'];
-
-                if ($value == NULL) {
-                    $value = 0;
-                }
-
-                break;
-
-            case 'prePage':
-                $value = $this->config['prePage'];
-
-                if ($value == NULL || $value < 1) {
-                    $value = 20;
-                }
-
-                break;
-
-            case 'remainTime':
-                $value = $this->config['remainTime'];
-
-                if ($value == NULL) {
-                    $value = 10;
-                }
-
-                break;
-
-            case 'roles':
-                $value = $this->config['roles'];
-
-                if ($value == NULL) {
-                    $value = array('administrator');
-                }
-
-                break;
-
-            case 'debug':
-                $value = $this->config['debug'];
-
-                if ($value == NULL) {
-                    $value = 0;
-                }
-
-                break;
-        }
-
-        return $value;
+        return $settings[$key];
     }
 
     private function music_remote($ids)
