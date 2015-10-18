@@ -12,9 +12,9 @@ class hermit
         add_action('admin_init', array($this, 'page_init'));
         add_action('wp_enqueue_scripts', array($this, 'hermit_scripts'));
         add_filter('plugin_action_links', array($this, 'plugin_action_link'), 10, 4);
-        add_action('in_admin_footer', array($this, 'music_footer'));
         add_action('wp_ajax_nopriv_hermit', array($this, 'hermit_callback'));
         add_action('wp_ajax_hermit', array($this, 'hermit_callback'));
+        add_action('in_admin_footer', array($this, 'music_footer'));
         add_action('wp_ajax_hermit_source', array($this, 'hermit_source_callback'));
     }
 
@@ -62,16 +62,17 @@ class hermit
     public function shortcode($atts, $content = NULL)
     {
         extract(shortcode_atts(array(
-            'auto' => 0,
-            'loop' => 0,
-            'unexpand' => 0,
-            'fullheight' => 0
-        ), $atts));
+                                   'auto' => 0,
+                                   'loop' => 0,
+                                   'unexpand' => 0,
+                                   'fullheight' => 0
+                               ), $atts));
 
         $color = $this->settings('color');
         $exClass = sprintf('hermit hermit-%s hermit-unexpand-%s hermit-fullheight-%s', $color, $unexpand, $fullheight);
+        $cover = HERMIT_URL . "/assets/images/cover@3x.png";
 
-        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box"><div class="hermit-controls"><div class="hermit-button"></div><div class="hermit-detail"></div><div class="hermit-duration"></div><div class="hermit-volume"></div><div class="hermit-orderbutton"></div><div class="hermit-listbutton"></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
+        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box hermit-clear"><div class="hermit-cover"><img class="hermit-cover-image" src="' . $cover . '" width="80" height="80" /><div class="hermit-button"></div></div><div class="hermit-info"><div class="hermit-title"><div class="hermit-detail"></div></div><div class="hermit-controller"><div class="hermit-author"></div><div class="hermit-additive"><div class="hermit-duration">00:00/00:00</div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
     }
 
     /**
@@ -244,9 +245,9 @@ class hermit
         $user = wp_get_current_user();
 
         if( array_intersect($allowed_roles, $user->roles) ){
-            if ($pagenow == "post-new.php" || $pagenow == "post.php") {
-                add_action('media_buttons_context', array($this, 'custom_button'));
+            add_action('media_buttons_context', array($this, 'custom_button'));
 
+            if ($pagenow == "post-new.php" || $pagenow == "post.php") {
                 $this->_css('hermit-post');
                 $this->_libjs('handlebars');
                 $this->_js('hermit-post');
