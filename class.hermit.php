@@ -245,9 +245,9 @@ class hermit
         $user = wp_get_current_user();
 
         if( array_intersect($allowed_roles, $user->roles) ){
-            add_action('media_buttons_context', array($this, 'custom_button'));
-
             if ($pagenow == "post-new.php" || $pagenow == "post.php") {
+                add_action('media_buttons_context', array($this, 'custom_button'));
+
                 $this->_css('hermit-post');
                 $this->_libjs('handlebars');
                 $this->_js('hermit-post');
