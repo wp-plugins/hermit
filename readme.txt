@@ -23,6 +23,9 @@ Hermit 音乐播放器：支持Html5+Flash 的音乐播放器。
 
 == Changelog ==
 
+= 2.1.7 =
+* 修复隐身模式bug;
+
 = 2.1.6 =
 * 修复bug;
 

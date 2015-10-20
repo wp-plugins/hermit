@@ -324,7 +324,7 @@ class HermitJson
 			$collect = array(
 				"collect_id"     => $radio_id,
 				"collect_title"  => '',
-				"collect_author" => '',
+				"collect_author" => '多人',
 				"collect_type"   => "radios",
 				"collect_count"  => $count
 			);
@@ -339,6 +339,8 @@ class HermitJson
 					"song_cover"  => $val['mainSong']['album']['picUrl']
 				);
 			}
+
+			$collect['collect_title'] = $collect["songs"][0]["song_author"];
 
 			$this->set_cache($key, $collect, 24);
 			return $collect;
@@ -363,32 +365,36 @@ class HermitJson
 			"User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.155 Safari/537.36"
 		);
 
+		$prefix = 'http://music.163.com/api/';
+
 		switch($type){
 			//歌单
 			case 0:
-				$url = "http://music.163.com/api/playlist/detail?id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				$url = "playlist/detail?id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
 				break;
 
 			//专辑
 			case 1:
-				$url = "http://music.163.com/api/album/{$id}?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				$url = "album/{$id}?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
 				break;
 
 			//单曲
 			case 2:
-				$url = "http://music.163.com/api/song/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				$url = "song/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
 				break;
 
 			//单播客
 			case 3:
-				$url = "http://music.163.com/api/dj/program/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				$url = "dj/program/detail?id={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
 				break;
 
 			//播客全集
 			case 4:
-				$url = "http://music.163.com/api/dj/program/byradio?radioId={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
+				$url = "dj/program/byradio?radioId={$id}&id={$id}&ids=%5B%22{$id}%22%5D&limit=10000&offset=0";
 				break;
 		}
+
+		$url = $prefix . $url;
 
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
