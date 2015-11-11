@@ -72,7 +72,7 @@ class hermit
         $exClass = sprintf('hermit hermit-%s hermit-unexpand-%s hermit-fullheight-%s', $color, $unexpand, $fullheight);
         $cover = HERMIT_URL . "/assets/images/cover@3x.png";
 
-        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" " songs="' . $content . '"><div class="hermit-box hermit-clear"><div class="hermit-cover"><img class="hermit-cover-image" src="' . $cover . '" width="80" height="80" /><div class="hermit-button"></div></div><div class="hermit-info"><div class="hermit-title"><div class="hermit-detail"></div></div><div class="hermit-controller"><div class="hermit-author"></div><div class="hermit-additive"><div class="hermit-duration">00:00/00:00</div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
+        return '<!--Hermit v' . HERMIT_VERSION . ' start--><div class="'.$exClass.'" auto="' . $auto . '" loop="' . $loop . '" songs="' . $content . '"><div class="hermit-box hermit-clear"><div class="hermit-cover"><img class="hermit-cover-image" src="' . $cover . '" width="80" height="80" /><div class="hermit-button"></div></div><div class="hermit-info"><div class="hermit-title"><div class="hermit-detail"></div></div><div class="hermit-controller"><div class="hermit-author"></div><div class="hermit-additive"><div class="hermit-duration">00:00/00:00</div><div class="hermit-volume"></div><div class="hermit-listbutton"></div></div></div><div class="hermit-prosess"><div class="hermit-loaded"></div><div class="hermit-prosess-bar"><div class="hermit-prosess-after"></div></div></div></div></div><div class="hermit-list"></div></div><!--Hermit  v' . HERMIT_VERSION . ' end-->';
     }
 
     /**
@@ -92,7 +92,7 @@ class hermit
         global $HMTJSON;
 
         $scope = $_GET['scope'];
-        $id = $_GET['id'];
+        $id = intval($_GET['id']);
 
         switch ($scope) {
             //虾米部分
