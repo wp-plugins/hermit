@@ -133,6 +133,31 @@ jQuery(document).ready(function ($) {
         }
     });
 
+    //新建分类
+    $('.hermit-list-table').on('click', '.hermit-new-nav', function () {
+        var title = window.prompt("新建分类","");
+
+        if( title ){
+            $bodyLoader.showProgress('新建分类中');
+
+            $.ajax({
+                url: hermit.adminUrl,
+                data: {
+                    type: 'catnew',
+                    title: title
+                },
+                type: 'post',
+                success: function (data) {
+                    hermit.catList = data;
+                    $bodyLoader.showSuccess('新建分类成功');
+                },
+                error: function () {
+                    $bodyLoader.showError('分类已存在');
+                }
+            });
+        }
+    });
+
     //初始化
     initView();
 
@@ -155,6 +180,11 @@ jQuery(document).ready(function ($) {
     //监测曲库
     watch(hermit, 'data', function () {
         initTable()
+    });
+
+    //检测分类
+    watch(hermit, 'catList', function () {
+        initCatNav();
     });
 
     window.showTableByCat = function(catid){
@@ -317,6 +347,7 @@ jQuery(document).ready(function ($) {
                     ids: ids
                 },
                 success: function (result) {
+                    hermit.catList = result;
                     list({
                         page: 1,
                         catid: hermit.currentCatId

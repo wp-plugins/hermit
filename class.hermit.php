@@ -92,7 +92,7 @@ class hermit
         global $HMTJSON;
 
         $scope = $_GET['scope'];
-        $id = intval($_GET['id']);
+        $id = $_GET['id'];
 
         switch ($scope) {
             //虾米部分
@@ -183,7 +183,8 @@ class hermit
 
             case 'delete':
                 $this->music_delete();
-                $this->success_response(array());
+                $data = $this->music_catList();
+                $this->success_response($data);
                 break;
 
             case 'move':
@@ -223,7 +224,8 @@ class hermit
                     $data = "分类名称已存在";
                     $this->error_response(500, $data);
                 } else {
-                    $data = $this->music_cat_new($title);
+                    $this->music_cat_new($title);
+                    $data = $this->music_catList();
                     $this->success_response($data);
                 }
                 break;

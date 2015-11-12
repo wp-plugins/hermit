@@ -49,6 +49,10 @@
     padding: 2px 10px!important;
 }
 
+.hermit-new-nav{
+    color: #444;
+}
+
 /* mxpage.js */
 .tablenav .tablenav-pages a,
 .tablenav-pages-navspan {

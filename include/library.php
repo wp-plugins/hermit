@@ -112,6 +112,7 @@ $catid = isset($_GET['catid']) && $_GET['catid'] ? $_GET['catid'] : null;
 	<!-- 菜单模板 -->
 	<script id="hermit-nav-template" type="text/x-handlebars-template">
 		{{#catNav catList count}}{{/catNav}}
+		| <a href="javascript:;" class="hermit-new-nav">+ 新建分类</a>
 	</script>
 
 	<!-- 翻页部分 -->
